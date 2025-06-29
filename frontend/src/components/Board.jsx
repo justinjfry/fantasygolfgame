@@ -7,26 +7,79 @@ const Board = forwardRef(function Board({ username, onBack }, ref) {
   const [usedGolfers, setUsedGolfers] = useState(new Set());
 
   const golfers = [
-    'Tiger Woods',
-    'Rory McIlroy',
-    'Jon Rahm',
-    'Scottie Scheffler',
-    'Viktor Hovland',
-    'Xander Schauffele',
-    'Patrick Cantlay',
-    'Collin Morikawa',
-    'Justin Thomas',
-    'Jordan Spieth',
-    'Dustin Johnson',
-    'Brooks Koepka',
-    'Bryson DeChambeau',
-    'Hideki Matsuyama',
-    'Sungjae Im',
-    'Tommy Fleetwood',
-    'Shane Lowry',
-    'Justin Rose',
-    'Adam Scott',
-    'Louis Oosthuizen'
+    { name: 'Robert Macintyre', salary: 10300 },
+    { name: 'Ben Griffin', salary: 9700 },
+    { name: 'Nick Dunlap', salary: 7000 },
+    { name: 'Joe Highsmith', salary: 7100 },
+    { name: 'Christiaan Bezuidenhout', salary: 7600 },
+    { name: 'Viktor Hovland', salary: 11000 },
+    { name: 'Sam Stevens', salary: 7600 },
+    { name: 'Rickie Fowler', salary: 8400 },
+    { name: 'Ryan Gerard', salary: 7700 },
+    { name: 'Harris English', salary: 9000 },
+    { name: 'Matt Fitzpatrick', salary: 8600 },
+    { name: 'Tommy Fleetwood', salary: 10800 },
+    { name: 'Ryan Fox', salary: 8300 },
+    { name: 'Eric Cole', salary: 7300 },
+    { name: 'Adam Scott', salary: 9100 },
+    { name: 'Min Woo Lee', salary: 8400 },
+    { name: 'Brian Harman', salary: 8700 },
+    { name: 'Taylor Pendrith', salary: 9200 },
+    { name: 'Thomas Detry', salary: 8000 },
+    { name: 'Matti Schmid', salary: 7400 },
+    { name: 'Adam Hadwin', salary: 7100 },
+    { name: 'Tony Finau', salary: 8900 },
+    { name: 'Mackenzie Hughes', salary: 8600 },
+    { name: 'Keegan Bradley', salary: 10700 },
+    { name: 'Rory McIlroy', salary: 12000 },
+    { name: 'Justin Thomas', salary: 11200 },
+    { name: 'Denny McCarthy', salary: 8500 },
+    { name: 'Michael Kim', salary: 7700 },
+    { name: 'Lucas Glover', salary: 7500 },
+    { name: 'Andrew Novak', salary: 8200 },
+    { name: 'Stephan Jaeger', salary: 7500 },
+    { name: 'Cameron Davis', salary: 7200 },
+    { name: 'Patrick Cantlay', salary: 11400 },
+    { name: 'Tom Hoge', salary: 7900 },
+    { name: 'Si Woo Kim', salary: 9300 },
+    { name: 'Shane Lowry', salary: 9900 },
+    { name: 'Alex Noren', salary: 7800 },
+    { name: 'Sungjae Im', salary: 9000 },
+    { name: 'Davis Thompson', salary: 8100 },
+    { name: 'J.J. Spaun', salary: 10100 },
+    { name: 'Matthieu Pavon', salary: 7200 },
+    { name: 'Xander Schauffele', salary: 11800 },
+    { name: 'J.T. Poston', salary: 8800 },
+    { name: 'Jordan Spieth', salary: 10000 },
+    { name: 'Jason Day', salary: 8800 },
+    { name: 'Gary Woodland', salary: 7500 },
+    { name: 'Scottie Scheffler', salary: 13600 },
+    { name: 'Russell Henley', salary: 10600 },
+    { name: 'Collin Morikawa', salary: 11600 },
+    { name: 'Max Homa', salary: 7700 },
+    { name: 'Nick Taylor', salary: 8000 },
+    { name: 'Akshay Bhatia', salary: 8900 },
+    { name: 'Brian Campbell', salary: 7000 },
+    { name: 'Kevin Yu', salary: 7800 },
+    { name: 'Corey Conners', salary: 10400 },
+    { name: 'Maverick McNealy', salary: 9400 },
+    { name: 'Harry Hall', salary: 8100 },
+    { name: 'Austin Eckroat', salary: 7300 },
+    { name: 'Ludvig Aberg', salary: 11500 },
+    { name: 'Bud Cauley', salary: 8200 },
+    { name: 'Daniel Berger', salary: 9600 },
+    { name: 'Hideki Matsuyama', salary: 9500 },
+    { name: 'Sam Burns', salary: 10500 },
+    { name: 'Byeong Hun An', salary: 7600 },
+    { name: 'Jhonattan Vegas', salary: 7500 },
+    { name: 'Jacob Bridgeman', salary: 7400 },
+    { name: 'Tom Kim', salary: 7900 },
+    { name: 'Cameron Young', salary: 10200 },
+    { name: 'Max Greyserman', salary: 8500 },
+    { name: 'Luke Clanton', salary: 8700 },
+    { name: 'Aaron Rai', salary: 9800 },
+    { name: 'Wyndham Clark', salary: 8300 },
+    { name: 'Sepp Straka', salary: 10900 },
   ];
 
   // Explicit load/save functions
@@ -81,21 +134,19 @@ const Board = forwardRef(function Board({ username, onBack }, ref) {
 
   const handleDrop = (e, index) => {
     e.preventDefault();
-    if (draggedGolfer && !usedGolfers.has(draggedGolfer)) {
+    if (draggedGolfer && !usedGolfers.has(draggedGolfer.name)) {
       const newBoardContent = [...boardContent];
       const previousGolfer = newBoardContent[index];
-      
       // Remove previous golfer from used list if it was a real golfer
-      if (previousGolfer !== 'Select Golfer') {
+      if (previousGolfer && previousGolfer.name) {
         const newUsedGolfers = new Set(usedGolfers);
-        newUsedGolfers.delete(previousGolfer);
+        newUsedGolfers.delete(previousGolfer.name);
         setUsedGolfers(newUsedGolfers);
       }
-      
       // Add new golfer to board and used list
       newBoardContent[index] = draggedGolfer;
       setBoardContent(newBoardContent);
-      setUsedGolfers(new Set([...usedGolfers, draggedGolfer]));
+      setUsedGolfers(new Set([...usedGolfers, draggedGolfer.name]));
       setDraggedGolfer(null);
     }
   };
@@ -112,26 +163,28 @@ const Board = forwardRef(function Board({ username, onBack }, ref) {
 
   const handleSquareClear = (index) => {
     const currentContent = boardContent[index];
-    
-    // If there's a golfer in this square, remove them from used list
-    if (currentContent !== 'Select Golfer') {
+    if (currentContent && currentContent.name) {
       const newUsedGolfers = new Set(usedGolfers);
-      newUsedGolfers.delete(currentContent);
+      newUsedGolfers.delete(currentContent.name);
       setUsedGolfers(newUsedGolfers);
     }
-    
     // Clear the square content
     const newBoardContent = [...boardContent];
-    newBoardContent[index] = 'Select Golfer';
+    newBoardContent[index] = null;
     setBoardContent(newBoardContent);
-    
     // Also deselect the square if it was selected
     const newSelected = new Set(selectedSquares);
     newSelected.delete(index);
     setSelectedSquares(newSelected);
   };
 
-  const renderSquare = (index, content) => {
+  // Sort golfers by salary descending
+  const sortedGolfers = [...golfers].sort((a, b) => b.salary - a.salary);
+
+  // Helper to format salary
+  const formatSalary = (salary) => `$${salary.toLocaleString()}`;
+
+  const renderSquare = (index, golferObj) => {
     const isSelected = selectedSquares.has(index);
     
     // Determine square color based on position
@@ -141,15 +194,15 @@ const Board = forwardRef(function Board({ username, onBack }, ref) {
     } else {
       // Center square (index 12 in 5x5 grid)
       if (index === 12) {
-        backgroundColor = '#2E7D32'; // Dark green
+        backgroundColor = '#388E3C'; // Tiny bit lighter green
       }
       // Corner squares (0, 4, 20, 24)
       else if ([0, 4, 20, 24].includes(index)) {
-        backgroundColor = '#388E3C'; // Slightly darker green
+        backgroundColor = '#43A047'; // Tiny bit darker green
       }
       // Middle diagonal squares (6, 8, 16, 18)
       else if ([6, 8, 16, 18].includes(index)) {
-        backgroundColor = '#81C784'; // Even lighter green
+        backgroundColor = '#A5D6A7'; // Slightly lighter green
       }
     }
     
@@ -170,6 +223,7 @@ const Board = forwardRef(function Board({ username, onBack }, ref) {
           border: '3px solid #0d47a1',
           backgroundColor: backgroundColor,
           display: 'flex',
+          flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
           cursor: 'pointer',
@@ -184,7 +238,12 @@ const Board = forwardRef(function Board({ username, onBack }, ref) {
         }}
         title="Left click to select, Right click or Double click to clear"
       >
-        {content !== 'Select Golfer' ? content : (isSelected ? content : '')}
+        {golferObj && golferObj.name ? (
+          <>
+            <span>{golferObj.name}</span>
+            <span style={{ fontSize: '0.85em', color: '#333', fontWeight: 'bold' }}>{formatSalary(golferObj.salary)}</span>
+          </>
+        ) : (isSelected ? 'Select Golfer' : '')}
       </div>
     );
   };
@@ -264,8 +323,8 @@ const Board = forwardRef(function Board({ username, onBack }, ref) {
             Available Golfers
           </h3>
           <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
-            {golfers.map((golfer, index) => {
-              const isUsed = usedGolfers.has(golfer);
+            {sortedGolfers.map((golfer, index) => {
+              const isUsed = usedGolfers.has(golfer.name);
               return (
                 <div
                   key={index}
@@ -284,6 +343,9 @@ const Board = forwardRef(function Board({ username, onBack }, ref) {
                     transition: 'all 0.2s ease',
                     textAlign: 'center',
                     opacity: isUsed ? 0.6 : 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
                   }}
                   onMouseOver={(e) => {
                     if (!isUsed) {
@@ -298,7 +360,8 @@ const Board = forwardRef(function Board({ username, onBack }, ref) {
                     }
                   }}
                 >
-                  {golfer}
+                  <span>{golfer.name}</span>
+                  <span style={{ fontSize: '0.95em', color: '#333', fontWeight: 'bold' }}>{formatSalary(golfer.salary)}</span>
                 </div>
               );
             })}
