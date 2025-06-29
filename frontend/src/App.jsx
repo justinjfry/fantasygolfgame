@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
+import Board from './components/Board';
 
 export default function App() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [currentPage, setCurrentPage] = useState('login'); // 'login' or 'board'
+  const boardRef = useRef();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -12,14 +15,31 @@ export default function App() {
   };
 
   const handleHomeClick = () => {
-    // Reload the page to return to the login screen
-    window.location.reload();
+    if (boardRef.current && boardRef.current.saveBoardState) {
+      boardRef.current.saveBoardState();
+    }
+    setCurrentPage('login');
+    setPassword('');
   };
 
-  const handlePlayNow = () => {
-    // Placeholder: navigate to the game or dashboard
-    alert('Play Now clicked! (Implement navigation here)');
+  const handleMyBoard = () => {
+    setCurrentPage('board');
   };
+
+  const handleBackToLogin = () => {
+    if (boardRef.current && boardRef.current.saveBoardState) {
+      boardRef.current.saveBoardState();
+    }
+    setCurrentPage('login');
+  };
+
+  // If we're on the board page, render the Board component
+  if (currentPage === 'board') {
+    console.log('=== RENDERING BOARD ===');
+    console.log('Current username:', username);
+    console.log('Username type:', typeof username);
+    return <Board ref={boardRef} username={username} onBack={handleBackToLogin} />;
+  }
 
   return (
     <div
@@ -92,10 +112,10 @@ export default function App() {
         {submitted ? (
           <>
             <div style={{ color: '#0d47a1', fontWeight: 'bold', fontSize: '1.5rem', marginBottom: '2rem' }}>
-              Welcome, {username}! Your account has been created.
+              Welcome back, {username}! You're logged in.
             </div>
             <button
-              onClick={handlePlayNow}
+              onClick={handleMyBoard}
               style={{
                 background: '#FFD600',
                 color: '#0d47a1',
@@ -109,7 +129,7 @@ export default function App() {
                 transition: 'background 0.2s, color 0.2s',
               }}
             >
-              Play Now
+              My Board
             </button>
           </>
         ) : (
