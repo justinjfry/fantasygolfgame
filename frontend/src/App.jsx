@@ -11,6 +11,16 @@ export default function App() {
     setSubmitted(true);
   };
 
+  const handleHomeClick = () => {
+    // Reload the page to return to the login screen
+    window.location.reload();
+  };
+
+  const handlePlayNow = () => {
+    // Placeholder: navigate to the game or dashboard
+    alert('Play Now clicked! (Implement navigation here)');
+  };
+
   return (
     <div
       style={{
@@ -21,8 +31,39 @@ export default function App() {
         justifyContent: 'flex-start',
         background: 'linear-gradient(135deg, #2196f3 0%, #0d47a1 100%)',
         paddingTop: '10vh',
+        position: 'relative',
       }}
     >
+      {/* Home Button */}
+      <button
+        onClick={handleHomeClick}
+        style={{
+          position: 'absolute',
+          top: '2rem',
+          left: '2rem',
+          background: '#FFD600',
+          color: '#0d47a1',
+          fontWeight: 'bold',
+          fontSize: '1.1rem',
+          padding: '0.5rem 1.5rem',
+          borderRadius: '1.5rem',
+          border: 'none',
+          cursor: 'pointer',
+          boxShadow: '0 2px 8px rgba(33,150,243,0.10)',
+          transition: 'background 0.2s, color 0.2s',
+        }}
+        onMouseOver={e => {
+          e.target.style.background = '#fff';
+          e.target.style.color = '#0d47a1';
+        }}
+        onMouseOut={e => {
+          e.target.style.background = '#FFD600';
+          e.target.style.color = '#0d47a1';
+        }}
+      >
+        Home
+      </button>
+      
       <h1
         style={{
           color: '#FFD600',
@@ -30,7 +71,7 @@ export default function App() {
           fontWeight: 'bold',
           textShadow: '2px 2px 8px #000',
           letterSpacing: '2px',
-          marginBottom: '2rem',
+          marginBottom: '2.7rem',
         }}
       >
         British Open Golf
@@ -45,12 +86,32 @@ export default function App() {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
+          marginTop: '0.7rem',
         }}
       >
         {submitted ? (
-          <div style={{ color: '#0d47a1', fontWeight: 'bold', fontSize: '1.5rem' }}>
-            Welcome, {username}! Your account has been created.
-          </div>
+          <>
+            <div style={{ color: '#0d47a1', fontWeight: 'bold', fontSize: '1.5rem', marginBottom: '2rem' }}>
+              Welcome, {username}! Your account has been created.
+            </div>
+            <button
+              onClick={handlePlayNow}
+              style={{
+                background: '#FFD600',
+                color: '#0d47a1',
+                fontWeight: 'bold',
+                fontSize: '1.3rem',
+                padding: '0.75rem 2.5rem',
+                borderRadius: '2rem',
+                border: 'none',
+                cursor: 'pointer',
+                boxShadow: '0 2px 8px rgba(33,150,243,0.10)',
+                transition: 'background 0.2s, color 0.2s',
+              }}
+            >
+              Play Now
+            </button>
+          </>
         ) : (
           <form onSubmit={handleSubmit} style={{ width: '100%' }}>
             <div style={{ marginBottom: '1.5rem' }}>
