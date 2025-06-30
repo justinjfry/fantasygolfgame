@@ -194,15 +194,15 @@ const Board = forwardRef(function Board({ username, onBack }, ref) {
     } else {
       // Center square (index 12 in 5x5 grid)
       if (index === 12) {
-        backgroundColor = '#388E3C'; // Tiny bit lighter green
+        backgroundColor = '#43A047'; // Darker uniform green
       }
       // Corner squares (0, 4, 20, 24)
       else if ([0, 4, 20, 24].includes(index)) {
-        backgroundColor = '#43A047'; // Tiny bit darker green
+        backgroundColor = '#43A047'; // Darker uniform green
       }
       // Middle diagonal squares (6, 8, 16, 18)
       else if ([6, 8, 16, 18].includes(index)) {
-        backgroundColor = '#A5D6A7'; // Slightly lighter green
+        backgroundColor = '#43A047'; // Darker uniform green
       }
     }
     
