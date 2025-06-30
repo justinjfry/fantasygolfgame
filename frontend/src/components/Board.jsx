@@ -132,23 +132,78 @@ const Board = forwardRef(function Board({ username, onBack }, ref) {
     e.preventDefault();
   };
 
+  // Helper to get all bingo lines
+  const getBingoLines = () => {
+    const lines = [];
+    // Rows
+    for (let r = 0; r < 5; r++) lines.push(Array.from({ length: 5 }, (_, c) => r * 5 + c));
+    // Columns
+    for (let c = 0; c < 5; c++) lines.push(Array.from({ length: 5 }, (_, r) => r * 5 + c));
+    // Diagonals
+    lines.push([0, 6, 12, 18, 24]);
+    lines.push([4, 8, 12, 16, 20]);
+    return lines;
+  };
+  const bingoLines = getBingoLines();
+
   const handleDrop = (e, index) => {
     e.preventDefault();
-    if (draggedGolfer && !usedGolfers.has(draggedGolfer.name)) {
-      const newBoardContent = [...boardContent];
-      const previousGolfer = newBoardContent[index];
-      // Remove previous golfer from used list if it was a real golfer
-      if (previousGolfer && previousGolfer.name) {
-        const newUsedGolfers = new Set(usedGolfers);
-        newUsedGolfers.delete(previousGolfer.name);
-        setUsedGolfers(newUsedGolfers);
+    if (!draggedGolfer || usedGolfers.has(draggedGolfer.name)) return;
+
+    // Only apply the rule to green squares
+    const isGreen = [12, 0, 4, 20, 24, 6, 8, 16, 18].includes(index);
+    if (isGreen) {
+      // Find all lines that would be completed by this drop
+      const linesWithThisSquare = bingoLines.filter(line => line.includes(index));
+      for (const line of linesWithThisSquare) {
+        // If this drop would complete the line (all other squares filled)
+        const otherSquares = line.filter(idx => idx !== index);
+        const allOthersFilled = otherSquares.every(idx => boardContent[idx] && boardContent[idx].name);
+        if (allOthersFilled) {
+          // Calculate avg remaining salary for green squares
+          const filledGreenSalaries = greenIndices
+            .map(idx => boardContent[idx])
+            .filter(golfer => golfer && golfer.name)
+            .reduce((sum, golfer) => sum + (golfer.salary || 0), 0);
+          const openGreenCount = greenIndices.filter(idx => !boardContent[idx] || !boardContent[idx].name).length;
+          const avgGreenSalary = openGreenCount > 0 ? (90000 - filledGreenSalaries) / openGreenCount : 0;
+          if (draggedGolfer.salary > avgGreenSalary) {
+            alert('You can only complete a line if the last golfer is at or under the avg remaining salary!');
+            return;
+          }
+        }
       }
-      // Add new golfer to board and used list
-      newBoardContent[index] = draggedGolfer;
-      setBoardContent(newBoardContent);
-      setUsedGolfers(new Set([...usedGolfers, draggedGolfer.name]));
-      setDraggedGolfer(null);
     }
+
+    // Only apply the rule to white squares
+    const isWhite = !isGreen;
+    if (isWhite) {
+      // If this is the last open white square
+      const openWhiteCount = whiteIndices.filter(idx => !boardContent[idx] || !boardContent[idx].name).length;
+      if (openWhiteCount === 1 && (!boardContent[index] || !boardContent[index].name)) {
+        const filledWhiteSalaries = whiteIndices
+          .map(idx => boardContent[idx])
+          .filter(golfer => golfer && golfer.name)
+          .reduce((sum, golfer) => sum + (golfer.salary || 0), 0);
+        const avgWhiteSalary = (160000 - filledWhiteSalaries) / 1;
+        if (draggedGolfer.salary > avgWhiteSalary) {
+          alert('You can only fill the last white square if the golfer is at or under the avg remaining salary!');
+          return;
+        }
+      }
+    }
+
+    const newBoardContent = [...boardContent];
+    const previousGolfer = newBoardContent[index];
+    if (previousGolfer && previousGolfer.name) {
+      const newUsedGolfers = new Set(usedGolfers);
+      newUsedGolfers.delete(previousGolfer.name);
+      setUsedGolfers(newUsedGolfers);
+    }
+    newBoardContent[index] = draggedGolfer;
+    setBoardContent(newBoardContent);
+    setUsedGolfers(new Set([...usedGolfers, draggedGolfer.name]));
+    setDraggedGolfer(null);
   };
 
   const handleSquareClick = (index) => {
@@ -182,29 +237,52 @@ const Board = forwardRef(function Board({ username, onBack }, ref) {
   const sortedGolfers = [...golfers].sort((a, b) => b.salary - a.salary);
 
   // Helper to format salary
-  const formatSalary = (salary) => `$${salary.toLocaleString()}`;
+  const formatSalary = (salary) => `$${salary.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+
+  // Indices of all green squares
+  const greenIndices = [12, 0, 4, 20, 24, 6, 8, 16, 18];
+  // Indices of all white squares
+  const allIndices = Array.from({ length: 25 }, (_, i) => i);
+  const whiteIndices = allIndices.filter(idx => !greenIndices.includes(idx));
+
+  // Calculate total salary of filled green squares
+  const filledGreenSalaries = greenIndices
+    .map(idx => boardContent[idx])
+    .filter(golfer => golfer && golfer.name)
+    .reduce((sum, golfer) => sum + (golfer.salary || 0), 0);
+
+  // Count open green squares
+  const openGreenCount = greenIndices.filter(idx => !boardContent[idx] || !boardContent[idx].name).length;
+
+  // Calculate avg remaining salary for green squares
+  const avgGreenSalary = openGreenCount > 0 ? (90000 - filledGreenSalaries) / openGreenCount : 0;
+
+  // Calculate total salary of filled white squares
+  const filledWhiteSalaries = whiteIndices
+    .map(idx => boardContent[idx])
+    .filter(golfer => golfer && golfer.name)
+    .reduce((sum, golfer) => sum + (golfer.salary || 0), 0);
+
+  // Count open white squares
+  const openWhiteCount = whiteIndices.filter(idx => !boardContent[idx] || !boardContent[idx].name).length;
+
+  // Calculate avg remaining salary for white squares
+  const avgWhiteSalary = openWhiteCount > 0 ? (160000 - filledWhiteSalaries) / openWhiteCount : 0;
 
   const renderSquare = (index, golferObj) => {
     const isSelected = selectedSquares.has(index);
     
     // Determine square color based on position
     let backgroundColor = 'white';
+    let isGreen = false;
     if (isSelected) {
       backgroundColor = '#FFD600'; // Yellow when selected
     } else {
-      // Center square (index 12 in 5x5 grid)
-      if (index === 12) {
-        backgroundColor = '#43A047'; // Darker uniform green
-      }
-      // Corner squares (0, 4, 20, 24)
-      else if ([0, 4, 20, 24].includes(index)) {
-        backgroundColor = '#43A047'; // Darker uniform green
-      }
-      // Middle diagonal squares (6, 8, 16, 18)
-      else if ([6, 8, 16, 18].includes(index)) {
-        backgroundColor = '#43A047'; // Darker uniform green
-      }
+      if (index === 12) { backgroundColor = '#43A047'; isGreen = true; }
+      else if ([0, 4, 20, 24].includes(index)) { backgroundColor = '#43A047'; isGreen = true; }
+      else if ([6, 8, 16, 18].includes(index)) { backgroundColor = '#43A047'; isGreen = true; }
     }
+    const isWhite = !isGreen;
     
     return (
       <div
@@ -243,7 +321,19 @@ const Board = forwardRef(function Board({ username, onBack }, ref) {
             <span>{golferObj.name}</span>
             <span style={{ fontSize: '0.85em', color: '#333', fontWeight: 'bold' }}>{formatSalary(golferObj.salary)}</span>
           </>
-        ) : (isSelected ? 'Select Golfer' : '')}
+        ) : (
+          isGreen ? (
+            <>
+              <span style={{ fontSize: '0.75em', color: '#0d47a1', fontWeight: 'bold' }}>avg remaining salary</span>
+              <span style={{ fontSize: '1em', color: '#0d47a1', fontWeight: 'bold' }}>{formatSalary(avgGreenSalary)}</span>
+            </>
+          ) : isWhite ? (
+            <>
+              <span style={{ fontSize: '0.75em', color: '#0d47a1', fontWeight: 'bold' }}>avg remaining salary</span>
+              <span style={{ fontSize: '1em', color: '#0d47a1', fontWeight: 'bold' }}>{formatSalary(avgWhiteSalary)}</span>
+            </>
+          ) : (isSelected ? 'Select Golfer' : '')
+        )}
       </div>
     );
   };
