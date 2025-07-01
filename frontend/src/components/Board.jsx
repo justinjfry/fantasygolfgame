@@ -154,8 +154,12 @@ const Board = forwardRef(function Board({ username, onBack }, ref) {
     const isOrange = [0, 4, 20, 24].includes(index);
     // Check if this is a green square (excluding orange squares)
     const isGreen = [12, 6, 8, 16, 18].includes(index);
+    // Check if this is a baby blue square
+    const isBabyBlue = [2, 7, 17, 22].includes(index);
+    // Check if this is a light magenta square
+    const isLightMagenta = [10, 11, 13, 14].includes(index);
     // Check if this is a white square
-    const isWhite = !isOrange && !isGreen;
+    const isWhite = !isOrange && !isGreen && !isBabyBlue && !isLightMagenta;
 
     // Check if this drop would complete any line
     const linesWithThisSquare = bingoLines.filter(line => line.includes(index));
@@ -195,6 +199,30 @@ const Board = forwardRef(function Board({ username, onBack }, ref) {
         const avgGreenSalary = openGreenCount > 0 ? (50000 - filledGreenSalaries) / openGreenCount : 0;
         if (draggedGolfer.salary > avgGreenSalary) {
           alert('You can only complete a line if the last golfer is at or under the avg remaining salary for green squares!');
+          return;
+        }
+      } else if (isBabyBlue) {
+        // Calculate avg remaining salary for baby blue squares
+        const filledBabyBlueSalaries = babyBlueIndices
+          .map(idx => boardContent[idx])
+          .filter(golfer => golfer && golfer.name)
+          .reduce((sum, golfer) => sum + (golfer.salary || 0), 0);
+        const openBabyBlueCount = babyBlueIndices.filter(idx => !boardContent[idx] || !boardContent[idx].name).length;
+        const avgBabyBlueSalary = openBabyBlueCount > 0 ? (40000 - filledBabyBlueSalaries) / openBabyBlueCount : 0;
+        if (draggedGolfer.salary > avgBabyBlueSalary) {
+          alert('You can only complete a line if the last golfer is at or under the avg remaining salary for baby blue squares!');
+          return;
+        }
+      } else if (isLightMagenta) {
+        // Calculate avg remaining salary for light magenta squares
+        const filledLightMagentaSalaries = lightMagentaIndices
+          .map(idx => boardContent[idx])
+          .filter(golfer => golfer && golfer.name)
+          .reduce((sum, golfer) => sum + (golfer.salary || 0), 0);
+        const openLightMagentaCount = lightMagentaIndices.filter(idx => !boardContent[idx] || !boardContent[idx].name).length;
+        const avgLightMagentaSalary = openLightMagentaCount > 0 ? (40000 - filledLightMagentaSalaries) / openLightMagentaCount : 0;
+        if (draggedGolfer.salary > avgLightMagentaSalary) {
+          alert('You can only complete a line if the last golfer is at or under the avg remaining salary for light magenta squares!');
           return;
         }
       } else if (isWhite) {
@@ -277,9 +305,15 @@ const Board = forwardRef(function Board({ username, onBack }, ref) {
   // Indices of green squares (excluding orange squares)
   const greenIndices = [12, 6, 8, 16, 18];
   
+  // Indices of baby blue squares
+  const babyBlueIndices = [2, 7, 17, 22];
+  
+  // Indices of light magenta squares
+  const lightMagentaIndices = [10, 11, 13, 14];
+  
   // Indices of all white squares
   const allIndices = Array.from({ length: 25 }, (_, i) => i);
-  const whiteIndices = allIndices.filter(idx => !greenIndices.includes(idx) && !orangeIndices.includes(idx));
+  const whiteIndices = allIndices.filter(idx => !greenIndices.includes(idx) && !orangeIndices.includes(idx) && !babyBlueIndices.includes(idx) && !lightMagentaIndices.includes(idx));
 
   // Calculate total salary of filled orange squares
   const filledOrangeSalaries = orangeIndices
@@ -292,6 +326,30 @@ const Board = forwardRef(function Board({ username, onBack }, ref) {
 
   // Calculate avg remaining salary for orange squares
   const avgOrangeSalary = openOrangeCount > 0 ? (40000 - filledOrangeSalaries) / openOrangeCount : 0;
+
+  // Calculate total salary of filled baby blue squares
+  const filledBabyBlueSalaries = babyBlueIndices
+    .map(idx => boardContent[idx])
+    .filter(golfer => golfer && golfer.name)
+    .reduce((sum, golfer) => sum + (golfer.salary || 0), 0);
+
+  // Count open baby blue squares
+  const openBabyBlueCount = babyBlueIndices.filter(idx => !boardContent[idx] || !boardContent[idx].name).length;
+
+  // Calculate avg remaining salary for baby blue squares
+  const avgBabyBlueSalary = openBabyBlueCount > 0 ? (40000 - filledBabyBlueSalaries) / openBabyBlueCount : 0;
+
+  // Calculate total salary of filled light magenta squares
+  const filledLightMagentaSalaries = lightMagentaIndices
+    .map(idx => boardContent[idx])
+    .filter(golfer => golfer && golfer.name)
+    .reduce((sum, golfer) => sum + (golfer.salary || 0), 0);
+
+  // Count open light magenta squares
+  const openLightMagentaCount = lightMagentaIndices.filter(idx => !boardContent[idx] || !boardContent[idx].name).length;
+
+  // Calculate avg remaining salary for light magenta squares
+  const avgLightMagentaSalary = openLightMagentaCount > 0 ? (40000 - filledLightMagentaSalaries) / openLightMagentaCount : 0;
 
   // Calculate total salary of filled green squares
   const filledGreenSalaries = greenIndices
@@ -315,7 +373,7 @@ const Board = forwardRef(function Board({ username, onBack }, ref) {
   const openWhiteCount = whiteIndices.filter(idx => !boardContent[idx] || !boardContent[idx].name).length;
 
   // Calculate avg remaining salary for white squares
-  const avgWhiteSalary = openWhiteCount > 0 ? (160000 - filledWhiteSalaries) / openWhiteCount : 0;
+  const avgWhiteSalary = openWhiteCount > 0 ? (80000 - filledWhiteSalaries) / openWhiteCount : 0;
 
   const renderSquare = (index, golferObj) => {
     const isSelected = selectedSquares.has(index);
@@ -325,14 +383,18 @@ const Board = forwardRef(function Board({ username, onBack }, ref) {
     let backgroundColor = 'white';
     let isGreen = false;
     let isOrange = false;
+    let isBabyBlue = false;
+    let isLightMagenta = false;
     if (isSelected) {
       backgroundColor = '#FFD600'; // Yellow when selected
     } else {
-      if (index === 12) { backgroundColor = '#43A047'; isGreen = true; }
+      if (index === 12) { backgroundColor = '#66BB6A'; isGreen = true; }
       else if ([0, 4, 20, 24].includes(index)) { backgroundColor = '#FFA726'; isOrange = true; }
-      else if ([6, 8, 16, 18].includes(index)) { backgroundColor = '#43A047'; isGreen = true; }
+      else if ([6, 8, 16, 18].includes(index)) { backgroundColor = '#66BB6A'; isGreen = true; }
+      else if ([2, 7, 17, 22].includes(index)) { backgroundColor = '#87CEEB'; isBabyBlue = true; }
+      else if ([10, 11, 13, 14].includes(index)) { backgroundColor = '#DDA0DD'; isLightMagenta = true; }
     }
-    const isWhite = !isGreen && !isOrange;
+    const isWhite = !isGreen && !isOrange && !isBabyBlue && !isLightMagenta;
     
     return (
       <div
@@ -400,24 +462,34 @@ const Board = forwardRef(function Board({ username, onBack }, ref) {
               textShadow: '0 1px 2px rgba(0,0,0,0.1)'
             }}>{formatSalary(golferObj.salary)}</span>
           </>
-        ) : (
-          isOrange ? (
-            <>
-              <span style={{ fontSize: '0.75em', color: '#0d47a1', fontWeight: 'bold' }}>avg remaining salary</span>
-              <span style={{ fontSize: '1em', color: '#0d47a1', fontWeight: 'bold' }}>{formatSalary(avgOrangeSalary)}</span>
-            </>
-          ) : isGreen ? (
-            <>
-              <span style={{ fontSize: '0.75em', color: '#0d47a1', fontWeight: 'bold' }}>avg remaining salary</span>
-              <span style={{ fontSize: '1em', color: '#0d47a1', fontWeight: 'bold' }}>{formatSalary(avgGreenSalary)}</span>
-            </>
-          ) : isWhite ? (
-            <>
-              <span style={{ fontSize: '0.75em', color: '#0d47a1', fontWeight: 'bold' }}>avg remaining salary</span>
-              <span style={{ fontSize: '1em', color: '#0d47a1', fontWeight: 'bold' }}>{formatSalary(avgWhiteSalary)}</span>
-            </>
-          ) : (isSelected ? 'Select Golfer' : '')
-        )}
+                  ) : (
+            isOrange ? (
+              <>
+                <span style={{ fontSize: '0.75em', color: '#0d47a1', fontWeight: 'bold' }}>avg remaining salary</span>
+                <span style={{ fontSize: '1em', color: '#0d47a1', fontWeight: 'bold' }}>{formatSalary(avgOrangeSalary)}</span>
+              </>
+            ) : isGreen ? (
+              <>
+                <span style={{ fontSize: '0.75em', color: '#0d47a1', fontWeight: 'bold' }}>avg remaining salary</span>
+                <span style={{ fontSize: '1em', color: '#0d47a1', fontWeight: 'bold' }}>{formatSalary(avgGreenSalary)}</span>
+              </>
+            ) : isBabyBlue ? (
+              <>
+                <span style={{ fontSize: '0.75em', color: '#0d47a1', fontWeight: 'bold' }}>avg remaining salary</span>
+                <span style={{ fontSize: '1em', color: '#0d47a1', fontWeight: 'bold' }}>{formatSalary(avgBabyBlueSalary)}</span>
+              </>
+            ) : isLightMagenta ? (
+              <>
+                <span style={{ fontSize: '0.75em', color: '#0d47a1', fontWeight: 'bold' }}>avg remaining salary</span>
+                <span style={{ fontSize: '1em', color: '#0d47a1', fontWeight: 'bold' }}>{formatSalary(avgLightMagentaSalary)}</span>
+              </>
+            ) : isWhite ? (
+              <>
+                <span style={{ fontSize: '0.75em', color: '#0d47a1', fontWeight: 'bold' }}>avg remaining salary</span>
+                <span style={{ fontSize: '1em', color: '#0d47a1', fontWeight: 'bold' }}>{formatSalary(avgWhiteSalary)}</span>
+              </>
+            ) : (isSelected ? 'Select Golfer' : '')
+          )}
       </div>
     );
   };
@@ -564,10 +636,10 @@ const Board = forwardRef(function Board({ username, onBack }, ref) {
             background: 'rgba(255,255,255,0.95)',
             borderRadius: '15px',
             padding: '1.5rem',
-            minWidth: '200px',
+            minWidth: '280px',
             boxShadow: '0 4px 24px rgba(33,150,243,0.15)',
             position: 'absolute',
-            right: '15%',
+            right: '160px',
             top: '50%',
             transform: 'translateY(-50%)',
           }}
@@ -587,17 +659,18 @@ const Board = forwardRef(function Board({ username, onBack }, ref) {
                     background: isUsed ? '#e0e0e0' : '#f8f9fa',
                     border: '2px solid #e9ecef',
                     borderRadius: '8px',
-                    padding: '0.75rem',
-                    marginBottom: '0.5rem',
+                    padding: '0.5rem',
+                    marginBottom: '0.3rem',
                     cursor: isUsed ? 'not-allowed' : 'grab',
-                    fontSize: '0.9rem',
+                    fontSize: '0.7rem',
                     fontWeight: 'bold',
                     color: isUsed ? '#999' : '#0d47a1',
                     transition: 'all 0.2s ease',
-                    textAlign: 'center',
+                    textAlign: 'left',
                     opacity: isUsed ? 0.6 : 1,
                     display: 'flex',
-                    flexDirection: 'column',
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
                     alignItems: 'center',
                   }}
                   onMouseOver={(e) => {
@@ -614,7 +687,7 @@ const Board = forwardRef(function Board({ username, onBack }, ref) {
                   }}
                 >
                   <span>{golfer.name}</span>
-                  <span style={{ fontSize: '0.95em', color: '#333', fontWeight: 'bold' }}>{formatSalary(golfer.salary)}</span>
+                  <span style={{ fontSize: '0.85em', color: '#333', fontWeight: 'bold' }}>{formatSalary(golfer.salary)}</span>
                 </div>
               );
             })}
