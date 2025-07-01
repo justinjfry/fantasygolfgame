@@ -375,17 +375,19 @@ const Board = forwardRef(function Board({ username, onBack }, ref) {
   // Calculate avg remaining salary for white squares
   const avgWhiteSalary = openWhiteCount > 0 ? (80000 - filledWhiteSalaries) / openWhiteCount : 0;
 
+  const isBoardFull = boardContent.filter(content => content && content.name).length === 25;
+
   const renderSquare = (index, golferObj) => {
     const isSelected = selectedSquares.has(index);
     const isFilled = golferObj && golferObj.name;
-    
-    // Determine square color based on position
     let backgroundColor = 'white';
     let isGreen = false;
     let isOrange = false;
     let isBabyBlue = false;
     let isLightMagenta = false;
-    if (isSelected) {
+    if (isBoardFull) {
+      backgroundColor = '#FFD600';
+    } else if (isSelected) {
       backgroundColor = '#FFD600'; // Yellow when selected
     } else {
       if (index === 12) { backgroundColor = '#66BB6A'; isGreen = true; }
@@ -527,9 +529,9 @@ const Board = forwardRef(function Board({ username, onBack }, ref) {
           Rules
         </h3>
         <ol style={{ color: '#333', fontSize: '1.05rem', paddingLeft: '1.2rem' }}>
-          <li style={{ marginBottom: '0.7rem' }}><b>1.</b> Select <b>center square</b> to begin.</li>
-          <li style={{ marginBottom: '0.7rem' }}><b>2.</b> Fill green and white squares within their average salary limits.</li>
-          <li style={{ marginBottom: '0.7rem' }}><b>3.</b> Complete any row, column, or diagonal under the salary cap.</li>
+          <li style={{ marginBottom: '0.7rem' }}><b>1.</b> Drag players to fill squares on your board.</li>
+          <li style={{ marginBottom: '0.7rem' }}><b>2.</b> Stay under salary budget for each color zone.</li>
+          <li style={{ marginBottom: '0.7rem' }}><b>3.</b> Fill all 25 spaces to complete your board.</li>
         </ol>
       </div>
       {/* Header */}
