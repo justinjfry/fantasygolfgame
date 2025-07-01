@@ -349,6 +349,33 @@ const Board = forwardRef(function Board({ username, onBack }, ref) {
         alignItems: 'center',
       }}
     >
+      {/* Fixed-position Rules Box */}
+      <div
+        style={{
+          position: 'fixed',
+          top: '120px',
+          left: '40px',
+          background: 'rgba(255,255,255,0.95)',
+          borderRadius: '15px',
+          padding: '1.5rem',
+          minWidth: '220px',
+          maxWidth: '260px',
+          boxShadow: '0 4px 24px rgba(33,150,243,0.15)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'flex-start',
+          zIndex: 10,
+        }}
+      >
+        <h3 style={{ color: '#0d47a1', fontSize: '1.3rem', fontWeight: 'bold', marginBottom: '1rem' }}>
+          Rules
+        </h3>
+        <ol style={{ color: '#333', fontSize: '1.05rem', paddingLeft: '1.2rem' }}>
+          <li style={{ marginBottom: '0.7rem' }}><b>1.</b> Select <b>center square</b> to begin.</li>
+          <li style={{ marginBottom: '0.7rem' }}><b>2.</b> Fill green and white squares within their average salary limits.</li>
+          <li style={{ marginBottom: '0.7rem' }}><b>3.</b> Complete any row, column, or diagonal under the salary cap.</li>
+        </ol>
+      </div>
       {/* Header */}
       <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
         <h1 style={{ color: '#FFD600', fontSize: '3rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
