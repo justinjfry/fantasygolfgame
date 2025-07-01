@@ -150,44 +150,63 @@ const Board = forwardRef(function Board({ username, onBack }, ref) {
     e.preventDefault();
     if (!draggedGolfer || usedGolfers.has(draggedGolfer.name)) return;
 
-    // Only apply the rule to green squares
-    const isGreen = [12, 0, 4, 20, 24, 6, 8, 16, 18].includes(index);
-    if (isGreen) {
-      // Find all lines that would be completed by this drop
-      const linesWithThisSquare = bingoLines.filter(line => line.includes(index));
-      for (const line of linesWithThisSquare) {
-        // If this drop would complete the line (all other squares filled)
-        const otherSquares = line.filter(idx => idx !== index);
-        const allOthersFilled = otherSquares.every(idx => boardContent[idx] && boardContent[idx].name);
-        if (allOthersFilled) {
-          // Calculate avg remaining salary for green squares
-          const filledGreenSalaries = greenIndices
-            .map(idx => boardContent[idx])
-            .filter(golfer => golfer && golfer.name)
-            .reduce((sum, golfer) => sum + (golfer.salary || 0), 0);
-          const openGreenCount = greenIndices.filter(idx => !boardContent[idx] || !boardContent[idx].name).length;
-          const avgGreenSalary = openGreenCount > 0 ? (90000 - filledGreenSalaries) / openGreenCount : 0;
-          if (draggedGolfer.salary > avgGreenSalary) {
-            alert('You can only complete a line if the last golfer is at or under the avg remaining salary!');
-            return;
-          }
-        }
+    // Check if this is an orange square
+    const isOrange = [0, 4, 20, 24].includes(index);
+    // Check if this is a green square (excluding orange squares)
+    const isGreen = [12, 6, 8, 16, 18].includes(index);
+    // Check if this is a white square
+    const isWhite = !isOrange && !isGreen;
+
+    // Check if this drop would complete any line
+    const linesWithThisSquare = bingoLines.filter(line => line.includes(index));
+    let wouldCompleteLine = false;
+    
+    for (const line of linesWithThisSquare) {
+      // If this drop would complete the line (all other squares filled)
+      const otherSquares = line.filter(idx => idx !== index);
+      const allOthersFilled = otherSquares.every(idx => boardContent[idx] && boardContent[idx].name);
+      if (allOthersFilled) {
+        wouldCompleteLine = true;
+        break;
       }
     }
 
-    // Only apply the rule to white squares
-    const isWhite = !isGreen;
-    if (isWhite) {
-      // If this is the last open white square
-      const openWhiteCount = whiteIndices.filter(idx => !boardContent[idx] || !boardContent[idx].name).length;
-      if (openWhiteCount === 1 && (!boardContent[index] || !boardContent[index].name)) {
+    // If this drop would complete a line, check salary constraints
+    if (wouldCompleteLine) {
+      if (isOrange) {
+        // Calculate avg remaining salary for orange squares
+        const filledOrangeSalaries = orangeIndices
+          .map(idx => boardContent[idx])
+          .filter(golfer => golfer && golfer.name)
+          .reduce((sum, golfer) => sum + (golfer.salary || 0), 0);
+        const openOrangeCount = orangeIndices.filter(idx => !boardContent[idx] || !boardContent[idx].name).length;
+        const avgOrangeSalary = openOrangeCount > 0 ? (40000 - filledOrangeSalaries) / openOrangeCount : 0;
+        if (draggedGolfer.salary > avgOrangeSalary) {
+          alert('You can only complete a line if the last golfer is at or under the avg remaining salary for orange squares!');
+          return;
+        }
+      } else if (isGreen) {
+        // Calculate avg remaining salary for green squares
+        const filledGreenSalaries = greenIndices
+          .map(idx => boardContent[idx])
+          .filter(golfer => golfer && golfer.name)
+          .reduce((sum, golfer) => sum + (golfer.salary || 0), 0);
+        const openGreenCount = greenIndices.filter(idx => !boardContent[idx] || !boardContent[idx].name).length;
+        const avgGreenSalary = openGreenCount > 0 ? (50000 - filledGreenSalaries) / openGreenCount : 0;
+        if (draggedGolfer.salary > avgGreenSalary) {
+          alert('You can only complete a line if the last golfer is at or under the avg remaining salary for green squares!');
+          return;
+        }
+      } else if (isWhite) {
+        // Calculate avg remaining salary for white squares
         const filledWhiteSalaries = whiteIndices
           .map(idx => boardContent[idx])
           .filter(golfer => golfer && golfer.name)
           .reduce((sum, golfer) => sum + (golfer.salary || 0), 0);
-        const avgWhiteSalary = (160000 - filledWhiteSalaries) / 1;
+        const openWhiteCount = whiteIndices.filter(idx => !boardContent[idx] || !boardContent[idx].name).length;
+        const avgWhiteSalary = openWhiteCount > 0 ? (160000 - filledWhiteSalaries) / openWhiteCount : 0;
         if (draggedGolfer.salary > avgWhiteSalary) {
-          alert('You can only fill the last white square if the golfer is at or under the avg remaining salary!');
+          alert('You can only complete a line if the last golfer is at or under the avg remaining salary for white squares!');
           return;
         }
       }
@@ -233,17 +252,46 @@ const Board = forwardRef(function Board({ username, onBack }, ref) {
     setSelectedSquares(newSelected);
   };
 
+  const handleClearBoard = () => {
+    if (window.confirm('Are you sure you want to clear the entire board? This will remove all placed golfers.')) {
+      // Reset board to initial state
+      setBoardContent(Array(25).fill('Select Golfer'));
+      setSelectedSquares(new Set());
+      setUsedGolfers(new Set());
+      // Clear from localStorage
+      if (username) {
+        localStorage.removeItem(`board_${username}`);
+      }
+    }
+  };
+
   // Sort golfers by salary descending
   const sortedGolfers = [...golfers].sort((a, b) => b.salary - a.salary);
 
   // Helper to format salary
   const formatSalary = (salary) => `$${salary.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
 
-  // Indices of all green squares
-  const greenIndices = [12, 0, 4, 20, 24, 6, 8, 16, 18];
+  // Indices of orange corner squares (orange squares)
+  const orangeIndices = [0, 4, 20, 24];
+  
+  // Indices of green squares (excluding orange squares)
+  const greenIndices = [12, 6, 8, 16, 18];
+  
   // Indices of all white squares
   const allIndices = Array.from({ length: 25 }, (_, i) => i);
-  const whiteIndices = allIndices.filter(idx => !greenIndices.includes(idx));
+  const whiteIndices = allIndices.filter(idx => !greenIndices.includes(idx) && !orangeIndices.includes(idx));
+
+  // Calculate total salary of filled orange squares
+  const filledOrangeSalaries = orangeIndices
+    .map(idx => boardContent[idx])
+    .filter(golfer => golfer && golfer.name)
+    .reduce((sum, golfer) => sum + (golfer.salary || 0), 0);
+
+  // Count open orange squares
+  const openOrangeCount = orangeIndices.filter(idx => !boardContent[idx] || !boardContent[idx].name).length;
+
+  // Calculate avg remaining salary for orange squares
+  const avgOrangeSalary = openOrangeCount > 0 ? (40000 - filledOrangeSalaries) / openOrangeCount : 0;
 
   // Calculate total salary of filled green squares
   const filledGreenSalaries = greenIndices
@@ -255,7 +303,7 @@ const Board = forwardRef(function Board({ username, onBack }, ref) {
   const openGreenCount = greenIndices.filter(idx => !boardContent[idx] || !boardContent[idx].name).length;
 
   // Calculate avg remaining salary for green squares
-  const avgGreenSalary = openGreenCount > 0 ? (90000 - filledGreenSalaries) / openGreenCount : 0;
+  const avgGreenSalary = openGreenCount > 0 ? (50000 - filledGreenSalaries) / openGreenCount : 0;
 
   // Calculate total salary of filled white squares
   const filledWhiteSalaries = whiteIndices
@@ -271,18 +319,20 @@ const Board = forwardRef(function Board({ username, onBack }, ref) {
 
   const renderSquare = (index, golferObj) => {
     const isSelected = selectedSquares.has(index);
+    const isFilled = golferObj && golferObj.name;
     
     // Determine square color based on position
     let backgroundColor = 'white';
     let isGreen = false;
+    let isOrange = false;
     if (isSelected) {
       backgroundColor = '#FFD600'; // Yellow when selected
     } else {
       if (index === 12) { backgroundColor = '#43A047'; isGreen = true; }
-      else if ([0, 4, 20, 24].includes(index)) { backgroundColor = '#43A047'; isGreen = true; }
+      else if ([0, 4, 20, 24].includes(index)) { backgroundColor = '#FFA726'; isOrange = true; }
       else if ([6, 8, 16, 18].includes(index)) { backgroundColor = '#43A047'; isGreen = true; }
     }
-    const isWhite = !isGreen;
+    const isWhite = !isGreen && !isOrange;
     
     return (
       <div
@@ -298,7 +348,7 @@ const Board = forwardRef(function Board({ username, onBack }, ref) {
         style={{
           width: '80px',
           height: '80px',
-          border: '3px solid #0d47a1',
+          border: isFilled ? '4px solid #2E7D32' : '3px solid #0d47a1',
           backgroundColor: backgroundColor,
           display: 'flex',
           flexDirection: 'column',
@@ -313,16 +363,50 @@ const Board = forwardRef(function Board({ username, onBack }, ref) {
           textAlign: 'center',
           padding: '4px',
           position: 'relative',
+          boxShadow: isFilled ? '0 4px 12px rgba(46, 125, 50, 0.4)' : '0 2px 6px rgba(0,0,0,0.1)',
+          transform: isFilled ? 'scale(1.02)' : 'scale(1)',
         }}
         title="Left click to select, Right click or Double click to clear"
       >
         {golferObj && golferObj.name ? (
           <>
-            <span>{golferObj.name}</span>
-            <span style={{ fontSize: '0.85em', color: '#333', fontWeight: 'bold' }}>{formatSalary(golferObj.salary)}</span>
+            <div style={{ 
+              position: 'absolute', 
+              top: '2px', 
+              right: '2px', 
+              background: '#4CAF50', 
+              color: 'white', 
+              borderRadius: '50%', 
+              width: '16px', 
+              height: '16px', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              fontSize: '10px',
+              fontWeight: 'bold'
+            }}>
+              ✓
+            </div>
+            <span style={{ 
+              fontSize: '0.75rem', 
+              color: '#2E7D32', 
+              fontWeight: 'bold',
+              textShadow: '0 1px 2px rgba(0,0,0,0.1)'
+            }}>{golferObj.name}</span>
+            <span style={{ 
+              fontSize: '0.8em', 
+              color: '#1B5E20', 
+              fontWeight: 'bold',
+              textShadow: '0 1px 2px rgba(0,0,0,0.1)'
+            }}>{formatSalary(golferObj.salary)}</span>
           </>
         ) : (
-          isGreen ? (
+          isOrange ? (
+            <>
+              <span style={{ fontSize: '0.75em', color: '#0d47a1', fontWeight: 'bold' }}>avg remaining salary</span>
+              <span style={{ fontSize: '1em', color: '#0d47a1', fontWeight: 'bold' }}>{formatSalary(avgOrangeSalary)}</span>
+            </>
+          ) : isGreen ? (
             <>
               <span style={{ fontSize: '0.75em', color: '#0d47a1', fontWeight: 'bold' }}>avg remaining salary</span>
               <span style={{ fontSize: '1em', color: '#0d47a1', fontWeight: 'bold' }}>{formatSalary(avgGreenSalary)}</span>
@@ -343,7 +427,7 @@ const Board = forwardRef(function Board({ username, onBack }, ref) {
       style={{
         minHeight: '100vh',
         background: 'linear-gradient(135deg, #2196f3 0%, #0d47a1 100%)',
-        padding: '2rem',
+        padding: '1.5rem',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -377,8 +461,8 @@ const Board = forwardRef(function Board({ username, onBack }, ref) {
         </ol>
       </div>
       {/* Header */}
-      <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-        <h1 style={{ color: '#FFD600', fontSize: '3rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
+      <div style={{ textAlign: 'center', marginBottom: '0.25rem' }}>
+        <h1 style={{ color: '#FFD600', fontSize: '2.5rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
           {username}'s Board
         </h1>
       </div>
@@ -409,17 +493,69 @@ const Board = forwardRef(function Board({ username, onBack }, ref) {
         {/* Bingo Board */}
         <div
           style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(5, 80px)',
-            gridTemplateRows: 'repeat(5, 80px)',
-            gap: '8px',
-            backgroundColor: 'rgba(255,255,255,0.1)',
-            padding: '20px',
-            borderRadius: '15px',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '1rem',
           }}
         >
-          {boardContent.map((content, index) => renderSquare(index, content))}
+          {/* Filled Status Text */}
+          <div style={{ 
+            color: 'white', 
+            fontSize: '0.9rem', 
+            fontWeight: 'bold',
+            textAlign: 'center',
+            background: 'rgba(255,255,255,0.1)',
+            padding: '0.5rem 1rem',
+            borderRadius: '0.5rem',
+            backdropFilter: 'blur(10px)'
+          }}>
+            Filled: {boardContent.filter(content => content && content.name).length} / 25 squares
+          </div>
+          
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(5, 80px)',
+              gridTemplateRows: 'repeat(5, 80px)',
+              gap: '8px',
+              backgroundColor: 'rgba(255,255,255,0.1)',
+              padding: '20px',
+              borderRadius: '15px',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+            }}
+          >
+            {boardContent.map((content, index) => renderSquare(index, content))}
+          </div>
+          
+          {/* Clear Board Button */}
+          <button
+            onClick={handleClearBoard}
+            style={{
+              background: '#f44336',
+              color: 'white',
+              fontWeight: 'bold',
+              fontSize: '1rem',
+              padding: '0.75rem 1.5rem',
+              borderRadius: '1rem',
+              border: 'none',
+              cursor: 'pointer',
+              boxShadow: '0 4px 12px rgba(244, 67, 54, 0.3)',
+              transition: 'all 0.3s ease',
+            }}
+            onMouseOver={(e) => {
+              e.target.style.background = '#d32f2f';
+              e.target.style.transform = 'translateY(-2px)';
+              e.target.style.boxShadow = '0 6px 16px rgba(244, 67, 54, 0.4)';
+            }}
+            onMouseOut={(e) => {
+              e.target.style.background = '#f44336';
+              e.target.style.transform = 'translateY(0)';
+              e.target.style.boxShadow = '0 4px 12px rgba(244, 67, 54, 0.3)';
+            }}
+          >
+            Clear Board
+          </button>
         </div>
 
         {/* Golfer List */}
@@ -486,12 +622,7 @@ const Board = forwardRef(function Board({ username, onBack }, ref) {
         </div>
       </div>
 
-      {/* Stats */}
-      <div style={{ marginTop: '2rem', textAlign: 'center' }}>
-        <p style={{ color: 'white', fontSize: '1.1rem' }}>
-          Filled: {boardContent.filter(name => name !== 'Select Golfer').length} / 25 squares
-        </p>
-      </div>
+
     </div>
   );
 });
