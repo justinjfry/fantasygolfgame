@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { MapPin, Flag, Star } from 'lucide-react';
-import axios from 'axios';
+import api from '../api';
 
 interface Course {
   id: string;
@@ -20,7 +20,7 @@ export const Courses: React.FC = () => {
 
   const fetchCourses = async () => {
     try {
-      const response = await axios.get('/api/courses');
+      const response = await api.get('/api/courses');
       setCourses(response.data);
     } catch (error) {
       console.error('Error fetching courses:', error);

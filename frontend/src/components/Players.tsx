@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Users, Plus, Edit, Trash2 } from 'lucide-react';
-import axios from 'axios';
+import api from '../api';
 
 interface Player {
   id: string;
@@ -22,7 +22,7 @@ export const Players: React.FC = () => {
 
   const fetchPlayers = async () => {
     try {
-      const response = await axios.get('/api/players');
+      const response = await api.get('/api/players');
       setPlayers(response.data);
     } catch (error) {
       console.error('Error fetching players:', error);
@@ -34,7 +34,7 @@ export const Players: React.FC = () => {
     if (!newPlayerName.trim()) return;
 
     try {
-      await axios.post('/api/players', {
+      await api.post('/api/players', {
         name: newPlayerName,
         handicap: newPlayerHandicap
       });

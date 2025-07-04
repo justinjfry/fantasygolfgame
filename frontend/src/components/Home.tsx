@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Play, Users, MapPin, Trophy, Plus } from 'lucide-react';
-import axios from 'axios';
+import api from '../api';
 
 interface Player {
   id: string;
@@ -42,9 +42,9 @@ export const Home: React.FC = () => {
   const fetchData = async () => {
     try {
       const [playersRes, coursesRes, gamesRes] = await Promise.all([
-        axios.get('/api/players'),
-        axios.get('/api/courses'),
-        axios.get('/api/games')
+        api.get('/api/players'),
+        api.get('/api/courses'),
+        api.get('/api/games')
       ]);
       setPlayers(playersRes.data);
       setCourses(coursesRes.data);
@@ -59,7 +59,7 @@ export const Home: React.FC = () => {
     if (!newPlayerName.trim()) return;
 
     try {
-      await axios.post('/api/players', {
+      await api.post('/api/players', {
         name: newPlayerName,
         handicap: newPlayerHandicap
       });
@@ -75,7 +75,7 @@ export const Home: React.FC = () => {
     if (players.length === 0 || courses.length === 0) return;
 
     try {
-      const response = await axios.post('/api/games', {
+      const response = await api.post('/api/games', {
         courseId: courses[0].id,
         playerIds: players.map(p => p.id)
       });

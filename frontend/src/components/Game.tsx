@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Trophy, Flag, Users, CheckCircle } from 'lucide-react';
-import axios from 'axios';
+import api from '../api';
 
 interface GamePlayer {
   id: string;
@@ -37,7 +37,7 @@ export const Game: React.FC = () => {
 
   const fetchGame = async () => {
     try {
-      const response = await axios.get(`/api/games/${gameId}`);
+      const response = await api.get(`/api/games/${gameId}`);
       setGame(response.data);
       if (response.data.players.length > 0) {
         setSelectedPlayer(response.data.players[0].id);
@@ -51,7 +51,7 @@ export const Game: React.FC = () => {
     if (!game || !selectedPlayer || score <= 0) return;
 
     try {
-      await axios.put(`/api/games/${gameId}/score`, {
+      await api.put(`/api/games/${gameId}/score`, {
         playerId: selectedPlayer,
         hole: selectedHole,
         score: score
@@ -67,7 +67,7 @@ export const Game: React.FC = () => {
     if (!game) return;
 
     try {
-      await axios.put(`/api/games/${gameId}/complete`);
+      await api.put(`/api/games/${gameId}/complete`);
       fetchGame();
     } catch (error) {
       console.error('Error completing game:', error);
@@ -170,7 +170,7 @@ export const Game: React.FC = () => {
               onClick={completeGame}
               className="golf-button text-white px-4 py-2 rounded-lg flex items-center gap-2"
             >
-              <CheckCircle className="h-4 w-4" />
+              <CheckCircle className="h-4 w-4 text-yellow-500" />
               Complete Game
             </button>
           )}

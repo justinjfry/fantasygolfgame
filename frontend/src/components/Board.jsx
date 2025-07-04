@@ -387,8 +387,6 @@ const Board = forwardRef(function Board({ username, onBack }, ref) {
     let isLightMagenta = false;
     if (isBoardFull) {
       backgroundColor = '#FFD600';
-    } else if (isSelected) {
-      backgroundColor = '#FFD600'; // Yellow when selected
     } else {
       if (index === 12) { backgroundColor = '#66BB6A'; isGreen = true; }
       else if ([0, 4, 20, 24].includes(index)) { backgroundColor = '#FFA726'; isOrange = true; }
@@ -438,8 +436,8 @@ const Board = forwardRef(function Board({ username, onBack }, ref) {
               position: 'absolute', 
               top: '2px', 
               right: '2px', 
-              background: '#4CAF50', 
-              color: 'white', 
+              background: '#FFD600', // yellow
+              color: '#0d47a1', // dark blue for contrast
               borderRadius: '50%', 
               width: '16px', 
               height: '16px', 
