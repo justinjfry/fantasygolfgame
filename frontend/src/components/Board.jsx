@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
 
-const Board = forwardRef(function Board({ username, onBack }, ref) {
+const Board = forwardRef(function Board({ username, onBack, onLeaderboardClick }, ref) {
   const [selectedSquares, setSelectedSquares] = useState(new Set());
   const [boardContent, setBoardContent] = useState(Array(25).fill('Select Golfer'));
   const [draggedGolfer, setDraggedGolfer] = useState(null);
@@ -532,11 +532,30 @@ const Board = forwardRef(function Board({ username, onBack }, ref) {
           <li style={{ marginBottom: '0.7rem' }}><b>3.</b> Fill all 25 spaces to complete your board.</li>
         </ol>
       </div>
-      {/* Header */}
-      <div style={{ textAlign: 'center', marginBottom: '0.25rem' }}>
-        <h1 style={{ color: '#FFD600', fontSize: '2.5rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
+      {/* Header with absolutely positioned Leaderboard Button */}
+      <div style={{ position: 'relative', textAlign: 'center', marginBottom: '0.25rem' }}>
+        <h1 style={{ color: '#FFD600', fontSize: '2.5rem', fontWeight: 'bold', marginBottom: '0.5rem', display: 'inline-block' }}>
           {username}'s Board
         </h1>
+        <button
+          onClick={() => typeof onLeaderboardClick === 'function' && onLeaderboardClick()}
+          style={{
+            position: 'absolute',
+            left: 545,
+            top: '48%',
+            transform: 'translateY(-50%)',
+            background: '#FFD600',
+            color: '#0d47a1',
+            fontWeight: 'bold',
+            fontSize: '1.1rem',
+            border: 'none',
+            borderRadius: '1rem',
+            padding: '0.5rem 1.5rem',
+            cursor: 'pointer',
+          }}
+        >
+          Leaderboard
+        </button>
       </div>
 
       {/* Back Button */}
