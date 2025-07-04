@@ -1,0 +1,77 @@
+{
+  "boards": {
+    "justinjfry": {
+      "boardContent": [
+        "Select Golfer",
+        "Select Golfer",
+        {
+          "name": "Scottie Scheffler",
+          "salary": 13600
+        },
+        {
+          "name": "Patrick Cantlay",
+          "salary": 11400
+        },
+        "Select Golfer",
+        "Select Golfer",
+        "Select Golfer",
+        {
+          "name": "Collin Morikawa",
+          "salary": 11600
+        },
+        {
+          "name": "Rory McIlroy",
+          "salary": 12000
+        },
+        "Select Golfer",
+        "Select Golfer",
+        "Select Golfer",
+        {
+          "name": "Xander Schauffele",
+          "salary": 11800
+        },
+        {
+          "name": "Ludvig Aberg",
+          "salary": 11500
+        },
+        "Select Golfer",
+        "Select Golfer",
+        "Select Golfer",
+        {
+          "name": "Jacob Bridgeman",
+          "salary": 7400
+        },
+        "Select Golfer",
+        {
+          "name": "Russell Henley",
+          "salary": 10600
+        },
+        "Select Golfer",
+        "Select Golfer",
+        {
+          "name": "Matti Schmid",
+          "salary": 7400
+        },
+        "Select Golfer",
+        {
+          "name": "Justin Thomas",
+          "salary": 11200
+        }
+      ],
+      "selectedSquares": [],
+      "usedGolfers": [
+        "Xander Schauffele",
+        "Collin Morikawa",
+        "Ludvig Aberg",
+        "Rory McIlroy",
+        "Russell Henley",
+        "Patrick Cantlay",
+        "Scottie Scheffler",
+        "Jacob Bridgeman",
+        "Matti Schmid",
+        "Justin Thomas"
+      ],
+      "lastSaved": "2025-07-04T21:24:00.073Z"
+    }
+  }
+}

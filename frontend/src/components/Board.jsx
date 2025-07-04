@@ -1,10 +1,14 @@
 import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
 
-const Board = forwardRef(function Board({ username, onBack, onLeaderboardClick }, ref) {
+const Board = forwardRef(function Board({ username, onBack, onLeaderboardClick, onSave, readOnly = false, boardData }, ref) {
   const [selectedSquares, setSelectedSquares] = useState(new Set());
   const [boardContent, setBoardContent] = useState(Array(25).fill('Select Golfer'));
   const [draggedGolfer, setDraggedGolfer] = useState(null);
   const [usedGolfers, setUsedGolfers] = useState(new Set());
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState(null);
+  const autoSaveTimeout = useRef();
+  const saveStatusTimeout = useRef();
 
   const golfers = [
     { name: 'Robert Macintyre', salary: 10300 },
@@ -82,44 +86,39 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardClick }
     { name: 'Sepp Straka', salary: 10900 },
   ];
 
-  // Explicit load/save functions
-  const loadBoardState = () => {
-    if (!username) return;
-    const savedState = localStorage.getItem(`board_${username}`);
-    if (savedState) {
-      try {
-        const parsedState = JSON.parse(savedState);
-        setBoardContent(parsedState.boardContent || Array(25).fill('Select Golfer'));
-        setSelectedSquares(new Set(parsedState.selectedSquares || []));
-        setUsedGolfers(new Set(parsedState.usedGolfers || []));
-      } catch (error) {
-        console.error('Error loading saved board state:', error);
-      }
-    }
-  };
-
-  const saveBoardState = () => {
-    if (!username) return;
-    const stateToSave = {
-      boardContent,
-      selectedSquares: Array.from(selectedSquares),
-      usedGolfers: Array.from(usedGolfers),
-      lastSaved: new Date().toISOString()
-    };
-    localStorage.setItem(`board_${username}`, JSON.stringify(stateToSave));
-    console.log('Manually saved board for', username, stateToSave);
-  };
-
-  // Expose saveBoardState to parent via ref
-  useImperativeHandle(ref, () => ({
-    saveBoardState
-  }));
-
-  // Load board state when component mounts
+  // On mount, initialize board from boardData if provided
   useEffect(() => {
-    loadBoardState();
+    if (boardData) {
+      setBoardContent(boardData.boardContent || Array(25).fill('Select Golfer'));
+      setSelectedSquares(new Set(boardData.selectedSquares || []));
+      setUsedGolfers(new Set(boardData.usedGolfers || []));
+    }
+  }, [boardData]);
+
+  // Debounced auto-save effect (backend only)
+  useEffect(() => {
+    if (readOnly || !username || typeof onSave !== 'function') return;
+    if (autoSaveTimeout.current) clearTimeout(autoSaveTimeout.current);
+    setIsSaving(true);
+    setSaveStatus('saving');
+    autoSaveTimeout.current = setTimeout(async () => {
+      await onSave({
+        boardContent,
+        selectedSquares: Array.from(selectedSquares),
+        usedGolfers: Array.from(usedGolfers),
+        lastSaved: new Date().toISOString()
+      });
+      setIsSaving(false);
+      setSaveStatus('saved');
+      if (saveStatusTimeout.current) clearTimeout(saveStatusTimeout.current);
+      saveStatusTimeout.current = setTimeout(() => setSaveStatus(null), 1500);
+    }, 1000);
+    return () => {
+      if (autoSaveTimeout.current) clearTimeout(autoSaveTimeout.current);
+      if (saveStatusTimeout.current) clearTimeout(saveStatusTimeout.current);
+    };
     // eslint-disable-next-line
-  }, [username]);
+  }, [boardContent, selectedSquares, usedGolfers, username, onSave, readOnly]);
 
   const handleDragStart = (e, golfer) => {
     // Only allow dragging if golfer hasn't been used yet
@@ -286,10 +285,6 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardClick }
       setBoardContent(Array(25).fill('Select Golfer'));
       setSelectedSquares(new Set());
       setUsedGolfers(new Set());
-      // Clear from localStorage
-      if (username) {
-        localStorage.removeItem(`board_${username}`);
-      }
     }
   };
 
@@ -579,6 +574,15 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardClick }
         Back
       </button>
 
+      {/* Auto-save status indicator with reserved space */}
+      <div style={{ height: '1.5em', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+        {saveStatus === 'saving' && (
+          <span style={{ color: '#FFD600', fontWeight: 'bold' }}>Saving...</span>
+        )}
+        {saveStatus === 'saved' && (
+          <span style={{ color: '#FFD600', fontWeight: 'bold' }}>Saved!</span>
+        )}
+      </div>
       {/* Main Content Container */}
       <div style={{ display: 'flex', gap: '3rem', alignItems: 'flex-start', justifyContent: 'center', width: '100%' }}>
         {/* Bingo Board */}

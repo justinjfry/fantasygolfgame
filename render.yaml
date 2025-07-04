@@ -1,0 +1,22 @@
+services:
+  # Backend API
+  - type: web
+    name: fantasy-golf-backend
+    env: node
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+
+  # Frontend
+  - type: web
+    name: fantasy-golf-frontend
+    env: static
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: frontend/build
+    envVars:
+      - key: REACT_APP_API_URL
+        value: https://fantasy-golf-backend.onrender.com 

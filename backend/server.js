@@ -2,6 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const { v4: uuidv4 } = require('uuid');
+const low = require('lowdb');
+const FileSync = require('lowdb/adapters/FileSync');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -14,6 +16,11 @@ app.use(bodyParser.json());
 let players = [];
 let courses = [];
 let games = [];
+
+const adapter = new FileSync('boards.json');
+const db = low(adapter);
+
+db.defaults({ boards: {} }).write();
 
 // Sample golf courses
 const sampleCourses = [
@@ -176,6 +183,37 @@ app.get('/api/games/:gameId/leaderboard', (req, res) => {
     .sort((a, b) => a.netScore - b.netScore);
 
   res.json(leaderboard);
+});
+
+// Save or update a user's board
+app.post('/api/boards', (req, res) => {
+  const { username, board } = req.body;
+  console.log('Received save request:', req.body); // Debug log
+  if (!username || !board) {
+    console.log('Missing username or board in request'); // Debug log
+    return res.status(400).json({ error: 'Missing username or board' });
+  }
+  db.get('boards').remove({ username }).write(); // Remove old board if exists
+  db.get('boards').push({ username, board }).write();
+  console.log('Board saved for', username); // Debug log
+  res.json({ success: true });
+});
+
+// Get a user's board
+app.get('/api/boards/:username', (req, res) => {
+  const { username } = req.params;
+  const board = db.get(`boards.${username}`).value();
+  if (!board) {
+    return res.status(404).json({ error: 'Board not found' });
+  }
+  res.json({ board });
+});
+
+// Get all usernames (for leaderboard)
+app.get('/api/boards', (req, res) => {
+  const boards = db.get('boards').value() || {};
+  const usernames = Object.keys(boards);
+  res.json({ usernames });
 });
 
 app.listen(PORT, () => {

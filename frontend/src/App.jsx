@@ -1,12 +1,17 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import Board from './components/Board';
+import api from './api';
+import Leaderboard from './components/Leaderboard';
 
 export default function App() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [submitted, setSubmitted] = useState(false);
-  const [currentPage, setCurrentPage] = useState('login'); // 'login' or 'board'
+  const [currentPage, setCurrentPage] = useState('login'); // 'login', 'board', 'leaderboard', 'viewBoard'
+  const [viewedBoard, setViewedBoard] = useState(null);
+  const [viewedUsername, setViewedUsername] = useState('');
   const boardRef = useRef();
+  const [userBoardData, setUserBoardData] = useState(null);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -33,12 +38,76 @@ export default function App() {
     setCurrentPage('login');
   };
 
+  // Save board to backend
+  const handleBoardSave = useCallback(async (boardContent) => {
+    if (!username) return;
+    console.log('Saving board for', username, boardContent); // Debug log
+    try {
+      const res = await api.post('/api/boards', { username, board: boardContent });
+      console.log('Save response:', res.data); // Debug log
+    } catch (err) {
+      console.error('Save error:', err); // Debug log
+    }
+  }, [username]);
+
+  // Load board from backend
+  const loadBoardFromBackend = async (user) => {
+    try {
+      const res = await api.get(`/api/boards/${user}`);
+      return res.data.board;
+    } catch (err) {
+      return null;
+    }
+  };
+
+  // Handle viewing another user's board
+  const handleSelectUser = async (user) => {
+    setViewedUsername(user);
+    setCurrentPage('viewBoard');
+    const board = await loadBoardFromBackend(user);
+    setViewedBoard(board);
+  };
+
+  // Load the user's board from backend when username or currentPage changes to 'board'
+  useEffect(() => {
+    const fetchBoard = async () => {
+      if (username && currentPage === 'board') {
+        const board = await loadBoardFromBackend(username);
+        setUserBoardData(board);
+      }
+    };
+    fetchBoard();
+    // eslint-disable-next-line
+  }, [username, currentPage]);
+
   // If we're on the board page, render the Board component
   if (currentPage === 'board') {
     console.log('=== RENDERING BOARD ===');
     console.log('Current username:', username);
     console.log('Username type:', typeof username);
-    return <Board ref={boardRef} username={username} onBack={handleBackToLogin} />;
+    return <Board ref={boardRef} username={username} onBack={handleBackToLogin} onSave={handleBoardSave} loadBoard={loadBoardFromBackend} onLeaderboardClick={() => setCurrentPage('leaderboard')} boardData={userBoardData} />;
+  }
+  if (currentPage === 'leaderboard') {
+    return (
+      <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #2196f3 0%, #0d47a1 100%)', padding: '2rem' }}>
+        <button
+          onClick={() => setCurrentPage(username ? 'board' : 'login')}
+          style={{ marginBottom: '1rem', background: '#FFD600', color: '#0d47a1', fontWeight: 'bold', border: 'none', borderRadius: '1rem', padding: '0.5rem 1.5rem', cursor: 'pointer' }}
+        >
+          Back
+        </button>
+        <Leaderboard onSelectUser={handleSelectUser} />
+      </div>
+    );
+  }
+  if (currentPage === 'viewBoard') {
+    return (
+      <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #2196f3 0%, #0d47a1 100%)', padding: '2rem' }}>
+        <button onClick={() => setCurrentPage('leaderboard')} style={{ marginBottom: '1rem', background: '#FFD600', color: '#0d47a1', fontWeight: 'bold', border: 'none', borderRadius: '1rem', padding: '0.5rem 1.5rem', cursor: 'pointer' }}>Back to Leaderboard</button>
+        <h2 style={{ color: '#FFD600', fontWeight: 'bold', fontSize: '2rem', marginBottom: '1rem' }}>{viewedUsername}'s Board</h2>
+        {viewedBoard ? <Board username={viewedUsername} boardData={viewedBoard} readOnly /> : <div>Loading...</div>}
+      </div>
+    );
   }
 
   return (
