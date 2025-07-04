@@ -1,11 +1,10 @@
 import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
 
-const Board = forwardRef(function Board({ username, onBack, onLeaderboardClick, onSave, readOnly = false, boardData }, ref) {
+const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, onSave, readOnly = false, boardData }, ref) {
   const [selectedSquares, setSelectedSquares] = useState(new Set());
   const [boardContent, setBoardContent] = useState(Array(25).fill('Select Golfer'));
   const [draggedGolfer, setDraggedGolfer] = useState(null);
   const [usedGolfers, setUsedGolfers] = useState(new Set());
-  const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState(null);
   const autoSaveTimeout = useRef();
   const saveStatusTimeout = useRef();
@@ -99,8 +98,6 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardClick, 
   useEffect(() => {
     if (readOnly || !username || typeof onSave !== 'function') return;
     if (autoSaveTimeout.current) clearTimeout(autoSaveTimeout.current);
-    setIsSaving(true);
-    setSaveStatus('saving');
     autoSaveTimeout.current = setTimeout(async () => {
       await onSave({
         boardContent,
@@ -108,8 +105,6 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardClick, 
         usedGolfers: Array.from(usedGolfers),
         lastSaved: new Date().toISOString()
       });
-      setIsSaving(false);
-      setSaveStatus('saved');
       if (saveStatusTimeout.current) clearTimeout(saveStatusTimeout.current);
       saveStatusTimeout.current = setTimeout(() => setSaveStatus(null), 1500);
     }, 1000);
@@ -120,33 +115,15 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardClick, 
     // eslint-disable-next-line
   }, [boardContent, selectedSquares, usedGolfers, username, onSave, readOnly]);
 
-  const handleDragStart = (e, golfer) => {
-    // Only allow dragging if golfer hasn't been used yet
+  // If readOnly, disable all editing handlers
+  const handleDragStart = readOnly ? undefined : (e, golfer) => {
     if (!usedGolfers.has(golfer)) {
       setDraggedGolfer(golfer);
     }
   };
-
-  const handleDragOver = (e) => {
-    e.preventDefault();
-  };
-
-  // Helper to get all bingo lines
-  const getBingoLines = () => {
-    const lines = [];
-    // Rows
-    for (let r = 0; r < 5; r++) lines.push(Array.from({ length: 5 }, (_, c) => r * 5 + c));
-    // Columns
-    for (let c = 0; c < 5; c++) lines.push(Array.from({ length: 5 }, (_, r) => r * 5 + c));
-    // Diagonals
-    lines.push([0, 6, 12, 18, 24]);
-    lines.push([4, 8, 12, 16, 20]);
-    return lines;
-  };
-  const bingoLines = getBingoLines();
-
-  const handleDrop = (e, index) => {
-    e.preventDefault();
+  const handleDragOver = readOnly ? undefined : (e) => { if (e) e.preventDefault(); };
+  const handleDrop = readOnly ? undefined : (e, index) => {
+    if (e) e.preventDefault();
     if (!draggedGolfer || usedGolfers.has(draggedGolfer.name)) return;
 
     // Check if this is an orange square
@@ -252,7 +229,7 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardClick, 
     setDraggedGolfer(null);
   };
 
-  const handleSquareClick = (index) => {
+  const handleSquareClick = readOnly ? undefined : (index) => {
     const newSelected = new Set(selectedSquares);
     if (newSelected.has(index)) {
       newSelected.delete(index);
@@ -262,7 +239,7 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardClick, 
     setSelectedSquares(newSelected);
   };
 
-  const handleSquareClear = (index) => {
+  const handleSquareClear = readOnly ? undefined : (index) => {
     const currentContent = boardContent[index];
     if (currentContent && currentContent.name) {
       const newUsedGolfers = new Set(usedGolfers);
@@ -279,7 +256,7 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardClick, 
     setSelectedSquares(newSelected);
   };
 
-  const handleClearBoard = () => {
+  const handleClearBoard = readOnly ? undefined : () => {
     if (window.confirm('Are you sure you want to clear the entire board? This will remove all placed golfers.')) {
       // Reset board to initial state
       setBoardContent(Array(25).fill('Select Golfer'));
@@ -372,6 +349,17 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardClick, 
 
   const isBoardFull = boardContent.filter(content => content && content.name).length === 25;
 
+  // Helper to get all bingo lines
+  const getBingoLines = () => {
+    const lines = [];
+    for (let r = 0; r < 5; r++) lines.push(Array.from({ length: 5 }, (_, c) => r * 5 + c));
+    for (let c = 0; c < 5; c++) lines.push(Array.from({ length: 5 }, (_, r) => r * 5 + c));
+    lines.push([0, 6, 12, 18, 24]);
+    lines.push([4, 8, 12, 16, 20]);
+    return lines;
+  };
+  const bingoLines = getBingoLines();
+
   const renderSquare = (index, golferObj) => {
     const isSelected = selectedSquares.has(index);
     const isFilled = golferObj && golferObj.name;
@@ -394,14 +382,14 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardClick, 
     return (
       <div
         key={index}
-        onClick={() => handleSquareClick(index)}
-        onDoubleClick={() => handleSquareClear(index)}
-        onContextMenu={(e) => {
+        onClick={handleSquareClick ? () => handleSquareClick(index) : undefined}
+        onDoubleClick={handleSquareClear ? () => handleSquareClear(index) : undefined}
+        onContextMenu={handleSquareClear ? (e) => {
           e.preventDefault();
           handleSquareClear(index);
-        }}
-        onDragOver={handleDragOver}
-        onDrop={(e) => handleDrop(e, index)}
+        } : undefined}
+        onDragOver={handleDragOver ? handleDragOver : undefined}
+        onDrop={handleDrop ? (e) => handleDrop(e, index) : undefined}
         style={{
           width: '80px',
           height: '80px',
@@ -489,6 +477,30 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardClick, 
     );
   };
 
+  // Expose getCurrentBoardState and flushSave to parent via ref
+  useImperativeHandle(ref, () => ({
+    getCurrentBoardState: () => ({
+      boardContent,
+      selectedSquares: Array.from(selectedSquares),
+      usedGolfers: Array.from(usedGolfers),
+      lastSaved: new Date().toISOString()
+    }),
+    flushSave: async () => {
+      if (autoSaveTimeout.current) {
+        clearTimeout(autoSaveTimeout.current);
+        autoSaveTimeout.current = null;
+      }
+      if (typeof onSave === 'function' && username) {
+        await onSave({
+          boardContent,
+          selectedSquares: Array.from(selectedSquares),
+          usedGolfers: Array.from(usedGolfers),
+          lastSaved: new Date().toISOString()
+        });
+      }
+    }
+  }));
+
   return (
     <div
       style={{
@@ -501,56 +513,76 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardClick, 
       }}
     >
       {/* Fixed-position Rules Box */}
-      <div
-        style={{
-          position: 'fixed',
-          top: '120px',
-          left: '40px',
-          background: 'rgba(255,255,255,0.95)',
-          borderRadius: '15px',
-          padding: '1.5rem',
-          minWidth: '220px',
-          maxWidth: '260px',
-          boxShadow: '0 4px 24px rgba(33,150,243,0.15)',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'flex-start',
-          zIndex: 10,
-        }}
-      >
-        <h3 style={{ color: '#0d47a1', fontSize: '1.3rem', fontWeight: 'bold', marginBottom: '1rem' }}>
-          Rules
-        </h3>
-        <ol style={{ color: '#333', fontSize: '1.05rem', paddingLeft: '1.2rem' }}>
-          <li style={{ marginBottom: '0.7rem' }}><b>1.</b> Drag players to fill squares on your board.</li>
-          <li style={{ marginBottom: '0.7rem' }}><b>2.</b> Stay under salary budget for each color zone.</li>
-          <li style={{ marginBottom: '0.7rem' }}><b>3.</b> Fill all 25 spaces to complete your board.</li>
-        </ol>
-      </div>
-      {/* Header with absolutely positioned Leaderboard Button */}
-      <div style={{ position: 'relative', textAlign: 'center', marginBottom: '0.25rem' }}>
-        <h1 style={{ color: '#FFD600', fontSize: '2.5rem', fontWeight: 'bold', marginBottom: '0.5rem', display: 'inline-block' }}>
-          {username}'s Board
-        </h1>
-        <button
-          onClick={() => typeof onLeaderboardClick === 'function' && onLeaderboardClick()}
+      {!readOnly && (
+        <div
           style={{
-            position: 'absolute',
-            left: 545,
-            top: '48%',
-            transform: 'translateY(-50%)',
-            background: '#FFD600',
-            color: '#0d47a1',
-            fontWeight: 'bold',
-            fontSize: '1.1rem',
-            border: 'none',
-            borderRadius: '1rem',
-            padding: '0.5rem 1.5rem',
-            cursor: 'pointer',
+            position: 'fixed',
+            top: '120px',
+            left: '40px',
+            background: 'rgba(255,255,255,0.95)',
+            borderRadius: '15px',
+            padding: '1.5rem',
+            minWidth: '220px',
+            maxWidth: '260px',
+            boxShadow: '0 4px 24px rgba(33,150,243,0.15)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'flex-start',
+            zIndex: 10,
           }}
         >
-          Leaderboard
-        </button>
+          <h3 style={{ color: '#0d47a1', fontSize: '1.3rem', fontWeight: 'bold', marginBottom: '1rem' }}>
+            Rules
+          </h3>
+          <ol style={{ color: '#333', fontSize: '1.05rem', paddingLeft: '1.2rem' }}>
+            <li style={{ marginBottom: '0.7rem' }}><b>1.</b> Drag players to fill squares on your board.</li>
+            <li style={{ marginBottom: '0.7rem' }}><b>2.</b> Stay under salary budget for each color zone.</li>
+            <li style={{ marginBottom: '0.7rem' }}><b>3.</b> Fill all 25 spaces to complete your board.</li>
+          </ol>
+        </div>
+      )}
+      {/* Header with absolutely positioned Leaderboard Button */}
+      <div style={{ position: 'relative', textAlign: 'center', marginBottom: '0.25rem' }}>
+        <h1 style={{ color: '#FFD600', fontSize: '2.5rem', fontWeight: 'bold', marginBottom: 0, display: 'inline-block' }}>
+          {username}'s Board
+        </h1>
+        {!readOnly && (
+          <button
+            onClick={async () => {
+              if (autoSaveTimeout.current) {
+                clearTimeout(autoSaveTimeout.current);
+                autoSaveTimeout.current = null;
+              }
+              if (typeof onSave === 'function' && username) {
+                await onSave({
+                  boardContent,
+                  selectedSquares: Array.from(selectedSquares),
+                  usedGolfers: Array.from(usedGolfers),
+                  lastSaved: new Date().toISOString()
+                });
+              }
+              if (typeof onLeaderboardNav === 'function') {
+                onLeaderboardNav();
+              }
+            }}
+            style={{
+              position: 'absolute',
+              left: 545,
+              top: '48%',
+              transform: 'translateY(-50%)',
+              background: '#FFD600',
+              color: '#0d47a1',
+              fontWeight: 'bold',
+              fontSize: '1.1rem',
+              border: 'none',
+              borderRadius: '1rem',
+              padding: '0.5rem 1.5rem',
+              cursor: 'pointer',
+            }}
+          >
+            Leaderboard
+          </button>
+        )}
       </div>
 
       {/* Back Button */}
@@ -595,18 +627,21 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardClick, 
           }}
         >
           {/* Filled Status Text */}
-          <div style={{ 
-            color: 'white', 
-            fontSize: '0.9rem', 
-            fontWeight: 'bold',
-            textAlign: 'center',
-            background: 'rgba(255,255,255,0.1)',
-            padding: '0.5rem 1rem',
-            borderRadius: '0.5rem',
-            backdropFilter: 'blur(10px)'
-          }}>
-            Filled: {boardContent.filter(content => content && content.name).length} / 25 squares
-          </div>
+          {!readOnly && (
+            <div style={{ 
+              color: 'white', 
+              fontSize: '0.9rem', 
+              fontWeight: 'bold',
+              textAlign: 'center',
+              background: 'rgba(255,255,255,0.1)',
+              padding: '0.5rem 1rem',
+              borderRadius: '0.5rem',
+              backdropFilter: 'blur(10px)',
+              marginTop: '-1.4rem'
+            }}>
+              Filled: {boardContent.filter(content => content && content.name).length} / 25 squares
+            </div>
+          )}
           
           <div
             style={{
@@ -624,98 +659,103 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardClick, 
           </div>
           
           {/* Clear Board Button */}
-          <button
-            onClick={handleClearBoard}
-            style={{
-              background: '#f44336',
-              color: 'white',
-              fontWeight: 'bold',
-              fontSize: '1rem',
-              padding: '0.75rem 1.5rem',
-              borderRadius: '1rem',
-              border: 'none',
-              cursor: 'pointer',
-              boxShadow: '0 4px 12px rgba(244, 67, 54, 0.3)',
-              transition: 'all 0.3s ease',
-            }}
-            onMouseOver={(e) => {
-              e.target.style.background = '#d32f2f';
-              e.target.style.transform = 'translateY(-2px)';
-              e.target.style.boxShadow = '0 6px 16px rgba(244, 67, 54, 0.4)';
-            }}
-            onMouseOut={(e) => {
-              e.target.style.background = '#f44336';
-              e.target.style.transform = 'translateY(0)';
-              e.target.style.boxShadow = '0 4px 12px rgba(244, 67, 54, 0.3)';
-            }}
-          >
-            Clear Board
-          </button>
+          {!readOnly && (
+            <button
+              onClick={handleClearBoard}
+              style={{
+                background: '#f44336',
+                color: 'white',
+                fontWeight: 'bold',
+                fontSize: '1rem',
+                padding: '0.75rem 1.5rem',
+                borderRadius: '1rem',
+                border: 'none',
+                cursor: 'pointer',
+                boxShadow: '0 4px 12px rgba(244, 67, 54, 0.3)',
+                transition: 'all 0.3s ease',
+              }}
+              onMouseOver={(e) => {
+                e.target.style.background = '#d32f2f';
+                e.target.style.transform = 'translateY(-2px)';
+                e.target.style.boxShadow = '0 6px 16px rgba(244, 67, 54, 0.4)';
+              }}
+              onMouseOut={(e) => {
+                e.target.style.background = '#f44336';
+                e.target.style.transform = 'translateY(0)';
+                e.target.style.boxShadow = '0 4px 12px rgba(244, 67, 54, 0.3)';
+              }}
+            >
+              Clear Board
+            </button>
+          )}
         </div>
 
         {/* Golfer List */}
-        <div
-          style={{
-            background: 'rgba(255,255,255,0.95)',
-            borderRadius: '15px',
-            padding: '1.5rem',
-            minWidth: '280px',
-            boxShadow: '0 4px 24px rgba(33,150,243,0.15)',
-            position: 'absolute',
-            right: '160px',
-            top: '50%',
-            transform: 'translateY(-50%)',
-          }}
-        >
-          <h3 style={{ color: '#0d47a1', fontSize: '1.3rem', fontWeight: 'bold', marginBottom: '1rem', textAlign: 'center' }}>
-            Available Golfers
-          </h3>
-          <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
-            {sortedGolfers.map((golfer, index) => {
-              const isUsed = usedGolfers.has(golfer.name);
-              return (
-                <div
-                  key={index}
-                  draggable={!isUsed}
-                  onDragStart={(e) => handleDragStart(e, golfer)}
-                  style={{
-                    background: isUsed ? '#e0e0e0' : '#f8f9fa',
-                    border: '2px solid #e9ecef',
-                    borderRadius: '8px',
-                    padding: '0.5rem',
-                    marginBottom: '0.3rem',
-                    cursor: isUsed ? 'not-allowed' : 'grab',
-                    fontSize: '0.7rem',
-                    fontWeight: 'bold',
-                    color: isUsed ? '#999' : '#0d47a1',
-                    transition: 'all 0.2s ease',
-                    textAlign: 'left',
-                    opacity: isUsed ? 0.6 : 1,
-                    display: 'flex',
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                  }}
-                  onMouseOver={(e) => {
-                    if (!isUsed) {
-                      e.target.style.background = '#e3f2fd';
-                      e.target.style.borderColor = '#2196f3';
-                    }
-                  }}
-                  onMouseOut={(e) => {
-                    if (!isUsed) {
-                      e.target.style.background = '#f8f9fa';
-                      e.target.style.borderColor = '#e9ecef';
-                    }
-                  }}
-                >
-                  <span>{golfer.name}</span>
-                  <span style={{ fontSize: '0.85em', color: '#333', fontWeight: 'bold' }}>{formatSalary(golfer.salary)}</span>
-                </div>
-              );
-            })}
+        {!readOnly && (
+          <div
+            style={{
+              background: 'rgba(255,255,255,0.95)',
+              borderRadius: '15px',
+              padding: '1.5rem',
+              minWidth: '280px',
+              boxShadow: '0 4px 24px rgba(33,150,243,0.15)',
+              position: 'absolute',
+              right: '160px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              marginTop: '1rem',
+            }}
+          >
+            <h3 style={{ color: '#0d47a1', fontSize: '1.3rem', fontWeight: 'bold', marginBottom: '1rem', textAlign: 'center' }}>
+              Available Golfers
+            </h3>
+            <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+              {sortedGolfers.map((golfer, index) => {
+                const isUsed = usedGolfers.has(golfer.name);
+                return (
+                  <div
+                    key={index}
+                    draggable={!isUsed}
+                    onDragStart={(e) => handleDragStart(e, golfer)}
+                    style={{
+                      background: isUsed ? '#e0e0e0' : '#f8f9fa',
+                      border: '2px solid #e9ecef',
+                      borderRadius: '8px',
+                      padding: '0.5rem',
+                      marginBottom: '0.3rem',
+                      cursor: isUsed ? 'not-allowed' : 'grab',
+                      fontSize: '0.7rem',
+                      fontWeight: 'bold',
+                      color: isUsed ? '#999' : '#0d47a1',
+                      transition: 'all 0.2s ease',
+                      textAlign: 'left',
+                      opacity: isUsed ? 0.6 : 1,
+                      display: 'flex',
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                    }}
+                    onMouseOver={(e) => {
+                      if (!isUsed) {
+                        e.target.style.background = '#e3f2fd';
+                        e.target.style.borderColor = '#2196f3';
+                      }
+                    }}
+                    onMouseOut={(e) => {
+                      if (!isUsed) {
+                        e.target.style.background = '#f8f9fa';
+                        e.target.style.borderColor = '#e9ecef';
+                      }
+                    }}
+                  >
+                    <span>{golfer.name}</span>
+                    <span style={{ fontSize: '0.85em', color: '#333', fontWeight: 'bold' }}>{formatSalary(golfer.salary)}</span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
 

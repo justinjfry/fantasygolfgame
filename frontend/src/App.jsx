@@ -63,7 +63,8 @@ export default function App() {
   // Handle viewing another user's board
   const handleSelectUser = async (user) => {
     setViewedUsername(user);
-    setCurrentPage('viewBoard');
+    setViewedBoard(null);
+    setCurrentPage('leaderboard');
     const board = await loadBoardFromBackend(user);
     setViewedBoard(board);
   };
@@ -80,24 +81,36 @@ export default function App() {
     // eslint-disable-next-line
   }, [username, currentPage]);
 
+  // Dedicated function to go to the user's own board
+  const goToMyBoard = () => {
+    setViewedUsername('');
+    setViewedBoard(null);
+    setCurrentPage('board');
+  };
+
   // If we're on the board page, render the Board component
   if (currentPage === 'board') {
     console.log('=== RENDERING BOARD ===');
     console.log('Current username:', username);
     console.log('Username type:', typeof username);
-    return <Board ref={boardRef} username={username} onBack={handleBackToLogin} onSave={handleBoardSave} loadBoard={loadBoardFromBackend} onLeaderboardClick={() => setCurrentPage('leaderboard')} boardData={userBoardData} />;
+    return <Board ref={boardRef} username={username} onBack={handleBackToLogin} onSave={handleBoardSave} loadBoard={loadBoardFromBackend} onLeaderboardNav={() => setCurrentPage('leaderboard')} boardData={userBoardData} />;
   }
   if (currentPage === 'leaderboard') {
     return (
-      <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #2196f3 0%, #0d47a1 100%)', padding: '2rem' }}>
-        <button
-          onClick={() => setCurrentPage(username ? 'board' : 'login')}
-          style={{ marginBottom: '1rem', background: '#FFD600', color: '#0d47a1', fontWeight: 'bold', border: 'none', borderRadius: '1rem', padding: '0.5rem 1.5rem', cursor: 'pointer' }}
-        >
-          Back
-        </button>
-        <Leaderboard onSelectUser={handleSelectUser} />
-      </div>
+      <Leaderboard
+        onSelectUser={handleSelectUser}
+        viewedUsername={viewedUsername}
+        viewedBoard={viewedBoard}
+        onBack={() => {
+          setViewedUsername('');
+          setViewedBoard(null);
+        }}
+        onBackToMyBoard={() => {
+          setViewedUsername('');
+          setViewedBoard(null);
+          setCurrentPage('board');
+        }}
+      />
     );
   }
   if (currentPage === 'viewBoard') {

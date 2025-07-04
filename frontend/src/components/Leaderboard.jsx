@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api';
+import Board from './Board';
 
-export default function Leaderboard({ onSelectUser }) {
+export default function Leaderboard({ onSelectUser, viewedUsername, viewedBoard, onBack, onBackToMyBoard }) {
   const [usernames, setUsernames] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -19,9 +20,29 @@ export default function Leaderboard({ onSelectUser }) {
     fetchUsernames();
   }, []);
 
+  if (viewedUsername) {
+    return (
+      <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #2196f3 0%, #0d47a1 100%)', padding: '2rem' }}>
+        <button
+          onClick={onBack}
+          style={{ position: 'absolute', top: '2rem', left: '2rem', zIndex: 1000, marginBottom: '1rem', background: '#FFD600', color: '#0d47a1', fontWeight: 'bold', border: 'none', borderRadius: '1rem', padding: '0.5rem 1.5rem', cursor: 'pointer' }}
+        >
+          Back
+        </button>
+        {viewedBoard ? <Board username={viewedUsername} boardData={viewedBoard} readOnly /> : <div>Loading...</div>}
+      </div>
+    );
+  }
+
   return (
-    <div style={{ background: 'white', borderRadius: '1rem', padding: '2rem', minWidth: 300 }}>
-      <h2 style={{ color: '#0d47a1', fontWeight: 'bold', fontSize: '2rem', marginBottom: '1rem' }}>Leaderboard</h2>
+    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #2196f3 0%, #0d47a1 100%)', padding: '2rem', position: 'relative' }}>
+      <button
+        onClick={onBackToMyBoard}
+        style={{ position: 'absolute', top: '2rem', left: '2rem', zIndex: 1000, marginBottom: '1rem', background: '#FFD600', color: '#0d47a1', fontWeight: 'bold', border: 'none', borderRadius: '1rem', padding: '0.5rem 1.5rem', cursor: 'pointer' }}
+      >
+        Back to My Board
+      </button>
+      <h2 style={{ color: '#FFD600', fontWeight: 'bold', fontSize: '2.5rem', marginBottom: '2rem', textAlign: 'center', width: '100%', marginTop: '0.5rem' }}>Leaderboard</h2>
       {loading ? (
         <div>Loading...</div>
       ) : usernames.length === 0 ? (
