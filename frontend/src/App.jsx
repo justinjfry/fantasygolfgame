@@ -12,11 +12,44 @@ export default function App() {
   const [viewedUsername, setViewedUsername] = useState('');
   const boardRef = useRef();
   const [userBoardData, setUserBoardData] = useState(null);
+  const [authError, setAuthError] = useState('');
+  const [isRegister, setIsRegister] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Here you would send the username and password to your backend
-    setSubmitted(true);
+    setAuthError('');
+    try {
+      if (isRegister) {
+        const res = await api.post('/api/register', { username, password });
+        if (res.data.success) {
+          // Wait briefly before logging in
+          setTimeout(async () => {
+            const loginRes = await api.post('/api/login', { username, password });
+            if (loginRes.data.success) {
+              setSubmitted(true);
+              setCurrentPage('board');
+            } else {
+              setAuthError('Registration succeeded but login failed.');
+            }
+          }, 200);
+        }
+      } else {
+        const res = await api.post('/api/login', { username, password });
+        if (res.data.success) {
+          setSubmitted(true);
+          setCurrentPage('board');
+        }
+      }
+    } catch (err) {
+      if (err.response && err.response.status === 401) {
+        setAuthError('Invalid username or password.');
+      } else if (err.response && err.response.status === 409) {
+        setAuthError('Username already exists.');
+      } else {
+        setAuthError('Authentication failed.');
+      }
+    }
   };
 
   const handleHomeClick = () => {
@@ -38,19 +71,28 @@ export default function App() {
     setCurrentPage('login');
   };
 
-  // Save board to backend
+  // Save board to backend (uses session authentication)
   const handleBoardSave = useCallback(async (boardContent) => {
-    if (!username) return;
-    console.log('Saving board for', username, boardContent); // Debug log
+    console.log('Saving board for authenticated user:', boardContent); // Debug log
     try {
-      const res = await api.post('/api/boards', { username, board: boardContent });
+      const res = await api.post('/api/boards', { board: boardContent });
       console.log('Save response:', res.data); // Debug log
     } catch (err) {
       console.error('Save error:', err); // Debug log
     }
-  }, [username]);
+  }, []);
 
-  // Load board from backend
+  // Load current user's board from backend (uses session authentication)
+  const loadMyBoardFromBackend = async () => {
+    try {
+      const res = await api.get('/api/boards/my');
+      return res.data.board;
+    } catch (err) {
+      return null;
+    }
+  };
+
+  // Load any user's board from backend (public read-only access)
   const loadBoardFromBackend = async (user) => {
     try {
       const res = await api.get(`/api/boards/${user}`);
@@ -69,17 +111,17 @@ export default function App() {
     setViewedBoard(board);
   };
 
-  // Load the user's board from backend when username or currentPage changes to 'board'
+  // Load the user's board from backend when currentPage changes to 'board'
   useEffect(() => {
     const fetchBoard = async () => {
-      if (username && currentPage === 'board') {
-        const board = await loadBoardFromBackend(username);
+      if (currentPage === 'board') {
+        const board = await loadMyBoardFromBackend();
         setUserBoardData(board);
       }
     };
     fetchBoard();
     // eslint-disable-next-line
-  }, [username, currentPage]);
+  }, [currentPage]);
 
   // Dedicated function to go to the user's own board
   const goToMyBoard = () => {
@@ -87,6 +129,55 @@ export default function App() {
     setViewedBoard(null);
     setCurrentPage('board');
   };
+
+  // Add a logout handler
+  const handleLogout = async () => {
+    try {
+      await api.post('/api/logout');
+    } catch (err) {
+      console.error('Logout error:', err);
+    }
+    setUsername('');
+    setPassword('');
+    setSubmitted(false);
+    setCurrentPage('login');
+  };
+
+  // Check authentication status on app load
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const res = await api.get('/api/auth/check');
+        if (res.data.authenticated) {
+          setUsername(res.data.username);
+          setSubmitted(true);
+          setCurrentPage('board');
+        }
+      } catch (err) {
+        console.error('Auth check error:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    checkAuth();
+  }, []);
+
+  // Show loading state while checking authentication
+  if (isLoading) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'linear-gradient(135deg, #2196f3 0%, #0d47a1 100%)',
+      }}>
+        <div style={{ color: '#FFD600', fontSize: '1.5rem', fontWeight: 'bold' }}>
+          Loading...
+        </div>
+      </div>
+    );
+  }
 
   // If we're on the board page, render the Board component
   if (currentPage === 'board') {
@@ -164,6 +255,35 @@ export default function App() {
         }}
       >
         Home
+      </button>
+      {/* Log Out Button */}
+      <button
+        onClick={handleLogout}
+        style={{
+          position: 'absolute',
+          top: '2rem',
+          right: '2rem',
+          background: '#FFD600',
+          color: '#0d47a1',
+          fontWeight: 'bold',
+          fontSize: '1.1rem',
+          padding: '0.5rem 1.5rem',
+          borderRadius: '1.5rem',
+          border: 'none',
+          cursor: 'pointer',
+          boxShadow: '0 2px 8px rgba(33,150,243,0.10)',
+          transition: 'background 0.2s, color 0.2s',
+        }}
+        onMouseOver={e => {
+          e.target.style.background = '#fff';
+          e.target.style.color = '#0d47a1';
+        }}
+        onMouseOut={e => {
+          e.target.style.background = '#FFD600';
+          e.target.style.color = '#0d47a1';
+        }}
+      >
+        Log Out
       </button>
       
       <h1
@@ -260,6 +380,9 @@ export default function App() {
                 placeholder="Create a password"
               />
             </div>
+            {authError && (
+              <div style={{ color: authError.includes('successful') ? 'green' : 'red', fontWeight: 'bold', marginBottom: '1rem' }}>{authError}</div>
+            )}
             <button
               type="submit"
               style={{
@@ -284,8 +407,19 @@ export default function App() {
                 e.target.style.color = '#0d47a1';
               }}
             >
-              Join Now
+              {isRegister ? 'Sign Up' : 'Sign In'}
             </button>
+            <div style={{ textAlign: 'center', marginTop: '0.7rem' }}>
+              {isRegister ? (
+                <button type="button" onClick={() => setIsRegister(false)} style={{ background: 'none', border: 'none', color: '#0d47a1', textDecoration: 'underline', cursor: 'pointer', fontSize: '1rem' }}>
+                  Already have an account? Sign In
+                </button>
+              ) : (
+                <button type="button" onClick={() => setIsRegister(true)} style={{ background: 'none', border: 'none', color: '#0d47a1', textDecoration: 'underline', cursor: 'pointer', fontSize: '1rem' }}>
+                  New user? Sign Up
+                </button>
+              )}
+            </div>
           </form>
         )}
       </div>
