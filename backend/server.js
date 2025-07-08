@@ -11,14 +11,18 @@ const session = require('express-session');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-const allowedOrigins = [
-  'http://localhost:3000',
-  'https://fantasygolfgame-frontend.onrender.com'
-];
-
-// Middleware
 app.use(cors({
-  origin: allowedOrigins,
+  origin: function(origin, callback) {
+    // Allow requests with no origin (like mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+    if (
+      origin === 'http://localhost:3000' ||
+      origin === 'https://fantasygolfgame-frontend.onrender.com'
+    ) {
+      return callback(null, true);
+    }
+    return callback(new Error('Not allowed by CORS'));
+  },
   credentials: true
 }));
 app.use(bodyParser.json());
