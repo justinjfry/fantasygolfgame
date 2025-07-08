@@ -225,14 +225,10 @@ app.get('/api/games/:gameId/leaderboard', (req, res) => {
 app.post('/api/boards', requireAuth, (req, res) => {
   const { board } = req.body;
   const username = req.session.user;
-  console.log('Received save request for user:', username); // Debug log
-  if (!board) {
-    console.log('Missing board in request'); // Debug log
-    return res.status(400).json({ error: 'Missing board' });
-  }
-  db.get('boards').remove({ username }).write(); // Remove old board if exists
+  // Remove any old board for this user
+  db.get('boards').remove({ username }).write();
+  // Save new board for this user
   db.get('boards').push({ username, board }).write();
-  console.log('Board saved for', username); // Debug log
   res.json({ success: true });
 });
 
@@ -240,9 +236,7 @@ app.post('/api/boards', requireAuth, (req, res) => {
 app.get('/api/boards/my', requireAuth, (req, res) => {
   const username = req.session.user;
   const board = db.get('boards').find({ username }).value();
-  if (!board) {
-    return res.status(404).json({ error: 'Board not found' });
-  }
+  if (!board) return res.status(404).json({ error: 'Board not found' });
   res.json({ board: board.board });
 });
 
@@ -250,9 +244,7 @@ app.get('/api/boards/my', requireAuth, (req, res) => {
 app.get('/api/boards/:username', (req, res) => {
   const { username } = req.params;
   const board = db.get('boards').find({ username }).value();
-  if (!board) {
-    return res.status(404).json({ error: 'Board not found' });
-  }
+  if (!board) return res.status(404).json({ error: 'Board not found' });
   res.json({ board: board.board });
 });
 

@@ -91,6 +91,10 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
       setBoardContent(boardData.boardContent || Array(25).fill('Select Golfer'));
       setSelectedSquares(new Set(boardData.selectedSquares || []));
       setUsedGolfers(new Set(boardData.usedGolfers || []));
+    } else {
+      setBoardContent(Array(25).fill('Select Golfer'));
+      setSelectedSquares(new Set());
+      setUsedGolfers(new Set());
     }
   }, [boardData]);
 

@@ -73,12 +73,11 @@ export default function App() {
 
   // Save board to backend (uses session authentication)
   const handleBoardSave = useCallback(async (boardContent) => {
-    console.log('Saving board for authenticated user:', boardContent); // Debug log
     try {
       const res = await api.post('/api/boards', { board: boardContent });
-      console.log('Save response:', res.data); // Debug log
+      // Optionally handle save status
     } catch (err) {
-      console.error('Save error:', err); // Debug log
+      console.error('Save error:', err);
     }
   }, []);
 
@@ -116,7 +115,17 @@ export default function App() {
     const fetchBoard = async () => {
       if (currentPage === 'board') {
         const board = await loadMyBoardFromBackend();
-        setUserBoardData(board);
+        if (board) {
+          setUserBoardData(board);
+        } else {
+          // Initialize a fresh board for new users
+          setUserBoardData({
+            boardContent: Array(25).fill('Select Golfer'),
+            selectedSquares: [],
+            usedGolfers: [],
+            lastSaved: null
+          });
+        }
       }
     };
     fetchBoard();
@@ -141,6 +150,7 @@ export default function App() {
     setPassword('');
     setSubmitted(false);
     setCurrentPage('login');
+    setUserBoardData(null); // Clear board state on logout
   };
 
   // Check authentication status on app load
@@ -184,7 +194,16 @@ export default function App() {
     console.log('=== RENDERING BOARD ===');
     console.log('Current username:', username);
     console.log('Username type:', typeof username);
-    return <Board ref={boardRef} username={username} onBack={handleBackToLogin} onSave={handleBoardSave} loadBoard={loadBoardFromBackend} onLeaderboardNav={() => setCurrentPage('leaderboard')} boardData={userBoardData} />;
+    return <Board
+      key={username} // Force remount on user change
+      ref={boardRef}
+      username={username}
+      onBack={handleBackToLogin}
+      onSave={handleBoardSave}
+      loadBoard={loadBoardFromBackend}
+      onLeaderboardNav={() => setCurrentPage('leaderboard')}
+      boardData={userBoardData}
+    />;
   }
   if (currentPage === 'leaderboard') {
     return (
