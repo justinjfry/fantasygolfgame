@@ -61,7 +61,14 @@ const USERS_FILE = './users.json';
 
 function loadUsers() {
   if (!fs.existsSync(USERS_FILE)) return [];
-  return JSON.parse(fs.readFileSync(USERS_FILE, 'utf8'));
+  try {
+    return JSON.parse(fs.readFileSync(USERS_FILE, 'utf8'));
+  } catch (err) {
+    // If file is invalid, reset to empty array and log the error
+    console.error('Failed to load users.json, resetting:', err);
+    fs.writeFileSync(USERS_FILE, '[]', 'utf8');
+    return [];
+  }
 }
 function saveUsers(users) {
   fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
