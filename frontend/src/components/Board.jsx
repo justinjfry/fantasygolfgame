@@ -542,11 +542,16 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
                   position: 'absolute',
                   top: '6px',
                   right: '8px',
-                  color: 'red',
+                  color: '#ff0000', // force strong red
                   fontSize: '1.3em',
                   zIndex: 2,
                   pointerEvents: 'none',
                   userSelect: 'none',
+                  fontWeight: 'bold',
+                  filter: 'none',
+                  textShadow: 'none',
+                  // @ts-ignore
+                  ...(typeof document !== 'undefined' ? { color: '#ff0000 !important' } : {}),
                 }}
                 title="Filled"
               >
