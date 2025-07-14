@@ -50,23 +50,6 @@ const db = low(adapter);
 
 db.defaults({ boards: {} }).write();
 
-const USERS_FILE = './users.json';
-
-function loadUsers() {
-  if (!fs.existsSync(USERS_FILE)) return [];
-  try {
-    return JSON.parse(fs.readFileSync(USERS_FILE, 'utf8'));
-  } catch (err) {
-    // If file is invalid, reset to empty array and log the error
-    console.error('Failed to load users.json, resetting:', err);
-    fs.writeFileSync(USERS_FILE, '[]', 'utf8');
-    return [];
-  }
-}
-function saveUsers(users) {
-  fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
-}
-
 // Sample golf courses
 const sampleCourses = [
   {
@@ -308,27 +291,30 @@ async function deleteBoardHandler(req, res) {
 app.post('/api/register', async (req, res) => {
   const { username, password } = req.body;
   if (!username || !password) return res.status(400).json({ error: 'Username and password required' });
-  const users = loadUsers();
-  if (users.find(u => u.username === username)) {
+
+  // Check if user already exists
+  const existing = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+  if (existing.rows.length > 0) {
     return res.status(409).json({ error: 'Username already exists' });
   }
+
+  // Hash password and insert new user
   const hashed = await bcrypt.hash(password, 10);
-  users.push({ username, password: hashed });
-  saveUsers(users);
-  // Ensure file is written before responding
-  setTimeout(() => {
-    res.json({ success: true });
-  }, 100);
+  await pool.query('INSERT INTO users (username, password) VALUES ($1, $2)', [username, hashed]);
+  res.json({ success: true });
 });
 
 app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
   if (!username || !password) return res.status(400).json({ error: 'Username and password required' });
-  const users = loadUsers();
-  const user = users.find(u => u.username === username);
-  if (!user) return res.status(401).json({ error: 'Invalid username or password' });
+
+  const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+  if (result.rows.length === 0) return res.status(401).json({ error: 'Invalid username or password' });
+
+  const user = result.rows[0];
   const match = await bcrypt.compare(password, user.password);
   if (!match) return res.status(401).json({ error: 'Invalid username or password' });
+
   req.session.user = username;
   res.json({ success: true, username });
 });
