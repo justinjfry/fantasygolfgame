@@ -13,17 +13,7 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(cors({
-  origin: function(origin, callback) {
-    // Allow requests with no origin (like mobile apps, curl, etc.)
-    if (!origin) return callback(null, true);
-    if (
-      origin === 'http://localhost:3000' ||
-      origin === 'https://fantasygolfgame-frontend.onrender.com'
-    ) {
-      return callback(null, true);
-    }
-    return callback(new Error('Not allowed by CORS'));
-  },
+  origin: 'https://fantasygolfgame-frontend.onrender.com', // your frontend URL
   credentials: true
 }));
 app.use(bodyParser.json());
@@ -34,9 +24,9 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: process.env.NODE_ENV === 'production',
+    secure: true,         // Always true on Render (HTTPS)
     httpOnly: true,
-    sameSite: 'none', // Allow cross-site cookies for frontend/backend on different subdomains
+    sameSite: 'none',     // Required for cross-site cookies
     maxAge: 24 * 60 * 60 * 1000 // 24 hours
   }
 }));
