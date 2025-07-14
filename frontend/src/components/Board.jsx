@@ -472,12 +472,12 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
   // Helper to get dynamic font size for golfer names to fit in a fixed width, up to 2 lines, with capped max size
   const getNameFontSize = (name) => {
     if (name.length <= 12) return '0.75rem'; // cap max size
-    if (name.length <= 16) return '0.68rem';
-    if (name.length <= 20) return '0.58rem';
-    if (name.length <= 24) return '0.48rem';
-    if (name.length <= 28) return '0.40rem';
-    if (name.length <= 34) return '0.34rem';
-    return '0.28rem'; // for extremely long names
+    if (name.length <= 16) return '0.70rem';
+    if (name.length <= 20) return '0.60rem';
+    if (name.length <= 24) return '0.50rem';
+    if (name.length <= 28) return '0.42rem';
+    if (name.length <= 34) return '0.36rem';
+    return '0.26rem'; // for extremely long names
   };
 
   const renderSquare = (index, golferObj) => {
@@ -560,7 +560,7 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
               display: 'flex',
               alignItems: 'center', // center vertically
               justifyContent: 'center',
-              margin: '0.1em 0', // less margin for more space
+              margin: '0.35em 0 0.1em 0', // more top margin to move name lower
               overflow: 'hidden',
             }}>
               <span style={{
@@ -577,8 +577,7 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
                 display: 'block',
               }}>{golferObj.name}</span>
             </div>
-            {/* Salary */}
-            <div style={{ height: '1.2em', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', marginTop: '0.2em' }}>
+            <div style={{ height: '1.2em', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', marginTop: '0.5em' }}>
               <span style={{
                 fontSize: '0.65em',
                 color: '#1B5E20',
