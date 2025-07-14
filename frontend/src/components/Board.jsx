@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
 
-const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, onSave, readOnly = false, boardData, boardsLocked = false }, ref) {
+const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, onSave, readOnly = false, boardData }, ref) {
   const [selectedSquares, setSelectedSquares] = useState(new Set());
   const [boardContent, setBoardContent] = useState(Array(25).fill('Select Golfer'));
   const [draggedGolfer, setDraggedGolfer] = useState(null);
@@ -183,7 +183,7 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
 
   // Debounced auto-save effect (backend only)
   useEffect(() => {
-    if (readOnly || boardsLocked || !username || typeof onSave !== 'function') return;
+    if (readOnly || !username || typeof onSave !== 'function') return;
     if (autoSaveTimeout.current) clearTimeout(autoSaveTimeout.current);
     autoSaveTimeout.current = setTimeout(async () => {
       await onSave({
@@ -200,16 +200,16 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
       if (saveStatusTimeout.current) clearTimeout(saveStatusTimeout.current);
     };
     // eslint-disable-next-line
-  }, [boardContent, selectedSquares, usedGolfers, username, onSave, readOnly, boardsLocked]);
+  }, [boardContent, selectedSquares, usedGolfers, username, onSave, readOnly]);
 
-  // If readOnly or boardsLocked, disable all editing handlers
-  const handleDragStart = (readOnly || boardsLocked) ? undefined : (e, golfer) => {
+  // If readOnly, disable all editing handlers
+  const handleDragStart = (readOnly) ? undefined : (e, golfer) => {
     if (!usedGolfers.has(golfer)) {
       setDraggedGolfer(golfer);
     }
   };
-  const handleDragOver = (readOnly || boardsLocked) ? undefined : (e) => { if (e) e.preventDefault(); };
-  const handleDrop = (readOnly || boardsLocked) ? undefined : (e, index) => {
+  const handleDragOver = (readOnly) ? undefined : (e) => { if (e) e.preventDefault(); };
+  const handleDrop = (readOnly) ? undefined : (e, index) => {
     if (e) e.preventDefault();
     if (!draggedGolfer || usedGolfers.has(draggedGolfer.name)) return;
 
@@ -332,7 +332,7 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
     }
   };
 
-  const handleSquareClick = (readOnly || boardsLocked) ? undefined : (index) => {
+  const handleSquareClick = (readOnly) => {
     const newSelected = new Set(selectedSquares);
     if (newSelected.has(index)) {
       newSelected.delete(index);
@@ -342,7 +342,7 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
     setSelectedSquares(newSelected);
   };
 
-  const handleSquareClear = (readOnly || boardsLocked) ? undefined : (index) => {
+  const handleSquareClear = (readOnly) => {
     const currentContent = boardContent[index];
     if (currentContent && currentContent.name) {
       const newUsedGolfers = new Set(usedGolfers);
@@ -359,7 +359,7 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
     setSelectedSquares(newSelected);
   };
 
-  const handleClearBoard = (readOnly || boardsLocked) ? undefined : () => {
+  const handleClearBoard = (readOnly) => {
     if (window.confirm('Are you sure you want to clear the entire board? This will remove all placed golfers.')) {
       // Reset board to initial state
       setBoardContent(Array(25).fill('Select Golfer'));
@@ -482,7 +482,7 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
     }
     const isWhite = !isGreen && !isOrange && !isBabyBlue && !isLightMagenta;
     
-    const disableInteractions = readOnly || boardsLocked;
+    const disableInteractions = readOnly;
     return (
       <div
         key={index}
@@ -614,7 +614,7 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
       }}
     >
       {/* Fixed-position Rules Box */}
-      {!readOnly && !boardsLocked && (
+      {!readOnly && (
         <div
           style={{
             position: 'fixed',
@@ -648,27 +648,6 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
           {username}'s Board
         </h1>
         
-        {/* Lock Status Indicator */}
-        {boardsLocked && (
-          <div style={{
-            position: 'absolute',
-            right: '2rem',
-            top: '50%',
-            transform: 'translateY(-50%)',
-            background: '#f44336',
-            color: 'white',
-            fontWeight: 'bold',
-            fontSize: '1rem',
-            padding: '0.5rem 1rem',
-            borderRadius: '0.5rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            boxShadow: '0 4px 12px rgba(244, 67, 54, 0.3)',
-          }}>
-            🔒 BOARDS LOCKED
-          </div>
-        )}
         
         {!readOnly && (
           <button
@@ -751,7 +730,7 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
           }}
         >
           {/* Filled Status Text */}
-          {!readOnly && !boardsLocked && (
+          {!readOnly && (
             <div style={{ 
               color: 'white', 
               fontSize: '0.9rem', 
@@ -783,7 +762,7 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
           </div>
           
           {/* Clear Board Button */}
-          {!readOnly && !boardsLocked && (
+          {!readOnly && (
             <button
               onClick={handleClearBoard}
               style={{
@@ -815,7 +794,7 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
         </div>
 
         {/* Golfer List */}
-        {!readOnly && !boardsLocked && (
+        {!readOnly && (
           <div
             style={{
               background: 'rgba(255,255,255,0.95)',
