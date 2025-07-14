@@ -546,14 +546,14 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
               fontSize: '0.85em',
               color: '#0d47a1',
               fontWeight: 'bold',
-              marginTop: '6px',
-              marginBottom: '2px',
-              minHeight: '18px',
+              marginTop: '2px',
+              marginBottom: '1px',
+              minHeight: '16px',
               display: 'block',
             }}>E</span>
             {/* Golfer name with dynamic font size and fixed height */}
             <div style={{
-              height: '2.2em', // fixed height for name row (fits up to 2 lines)
+              height: '2.6em', // more room for name, fits up to 2 lines
               width: '100%',
               display: 'flex',
               alignItems: 'center',
