@@ -512,7 +512,7 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
           boxShadow: isFilled ? '0 4px 12px rgba(46, 125, 50, 0.4)' : '0 2px 6px rgba(0,0,0,0.1)',
           transform: isFilled ? 'scale(1.02)' : 'scale(1)',
           pointerEvents: disableInteractions ? 'none' : 'auto',
-          opacity: disableInteractions ? 0.6 : 1,
+          opacity: disableInteractions ? 0.5 : 1,
         }}
         title={disableInteractions ? undefined : "Left click to select, Right click or Double click to clear"}
       >
@@ -862,6 +862,25 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
           </div>
         )}
       </div>
+
+      {/* Lock overlay when readOnly */}
+      {readOnly && (
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.6)',
+          zIndex: 9999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: '#FFD600',
+          fontSize: '2.5rem',
+          fontWeight: 'bold',
+          pointerEvents: 'all'
+        }}>
+          BOARDS ARE LOCKED
+        </div>
+      )}
 
 
     </div>
