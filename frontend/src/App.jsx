@@ -180,6 +180,17 @@ export default function App() {
       }
     };
     checkAuth();
+    
+    // Check if boards are locked
+    const checkLockStatus = async () => {
+      try {
+        const res = await api.get('/api/boards/lock-status');
+        setBoardsLocked(res.data.locked);
+      } catch (err) {
+        console.error('Error checking lock status:', err);
+      }
+    };
+    checkLockStatus();
   }, []);
 
   // Show loading state while checking authentication

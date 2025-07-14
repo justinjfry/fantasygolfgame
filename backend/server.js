@@ -342,7 +342,10 @@ app.get('/api/auth/check', (req, res) => {
 
 
 
-
+// Get board lock status
+app.get('/api/boards/lock-status', (req, res) => {
+  res.json({ locked: boardsLocked });
+});
 
 app.listen(PORT, () => {
   console.log(`Fantasy Golf Backend running on port ${PORT}`);
