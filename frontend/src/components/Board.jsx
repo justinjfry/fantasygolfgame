@@ -469,13 +469,13 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
   };
   const bingoLines = getBingoLines();
 
-  // Helper to get dynamic font size for golfer names to fit in a fixed width
+  // Helper to get dynamic font size for golfer names to fit in a fixed width and max 2 lines
   const getNameFontSize = (name) => {
     if (name.length <= 14) return '0.75rem';
     if (name.length <= 18) return '0.62rem';
     if (name.length <= 22) return '0.54rem';
-    if (name.length <= 28) return '0.46rem';
-    return '0.40rem'; // for very long names
+    if (name.length <= 28) return '0.44rem';
+    return '0.36rem'; // for very long names, force fit
   };
 
   const renderSquare = (index, golferObj) => {
@@ -536,28 +536,29 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            justifyContent: 'flex-start',
+            justifyContent: 'center', // center all content vertically
             height: '100%',
             width: '100%',
             paddingTop: 0,
           }}>
             {/* Score to par */}
-            <span style={{
-              fontSize: '0.85em',
-              color: '#0d47a1',
-              fontWeight: 'bold',
-              marginTop: '2px',
-              marginBottom: '1px',
-              minHeight: '16px',
-              display: 'block',
-            }}>E</span>
-            {/* Golfer name with dynamic font size and fixed height */}
+            <div style={{ height: '1.2em', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
+              <span style={{
+                fontSize: '0.85em',
+                color: '#0d47a1',
+                fontWeight: 'bold',
+                minHeight: '16px',
+                display: 'block',
+              }}>E</span>
+            </div>
+            {/* Name with fixed height and dynamic font size, centered between score and salary */}
             <div style={{
-              height: '2.6em', // more room for name, fits up to 2 lines
+              height: '2.2em', // fixed height for name row (fits up to 2 lines)
               width: '100%',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
+              margin: '0.2em 0', // equal margin above and below for centering
               overflow: 'hidden',
             }}>
               <span style={{
@@ -574,17 +575,17 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
                 display: 'block',
               }}>{golferObj.name}</span>
             </div>
-            {/* Uniform margin below name container before salary */}
-            <div style={{ height: '0.3em' }} />
             {/* Salary */}
-            <span style={{
-              fontSize: '0.65em',
-              color: '#1B5E20',
-              fontWeight: 'bold',
-              textShadow: '0 1px 2px rgba(0,0,0,0.1)',
-              minHeight: '16px',
-              marginBottom: 0,
-            }}>{formatSalary(golferObj.salary)}</span>
+            <div style={{ height: '1.2em', display: 'flex', alignItems: 'flex-start', justifyContent: 'center' }}>
+              <span style={{
+                fontSize: '0.65em',
+                color: '#1B5E20',
+                fontWeight: 'bold',
+                textShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                minHeight: '16px',
+                marginBottom: 0,
+              }}>{formatSalary(golferObj.salary)}</span>
+            </div>
           </div>
         ) : (
             isOrange ? (
