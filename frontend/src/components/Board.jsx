@@ -535,22 +535,24 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
       >
         {golferObj && golferObj.name ? (
           <>
-            {/* Red check mark in top right when filled */}
-            <span
-              style={{
-                position: 'absolute',
-                top: '6px',
-                right: '8px',
-                color: 'red',
-                fontSize: '1.3em',
-                zIndex: 2,
-                pointerEvents: 'none',
-                userSelect: 'none',
-              }}
-              title="Filled"
-            >
-              ✔️
-            </span>
+            {/* Red check mark in top right when filled, but not when board is full */}
+            {!isBoardFull && (
+              <span
+                style={{
+                  position: 'absolute',
+                  top: '6px',
+                  right: '8px',
+                  color: 'red',
+                  fontSize: '1.3em',
+                  zIndex: 2,
+                  pointerEvents: 'none',
+                  userSelect: 'none',
+                }}
+                title="Filled"
+              >
+                ✔️
+              </span>
+            )}
             <div style={{
               display: 'flex',
               flexDirection: 'column',
