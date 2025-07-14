@@ -616,8 +616,7 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
       }}
     >
       {/* Fixed-position Rules Box */}
-      {!readOnly && (
-        <div
+      <div
           style={{
             position: 'fixed',
             top: '120px',
@@ -643,51 +642,47 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
             <li style={{ marginBottom: '0.7rem' }}><b>3.</b> Fill all 25 spaces to complete your board.</li>
           </ol>
         </div>
-      )}
       {/* Header with absolutely positioned Leaderboard Button */}
       <div style={{ position: 'relative', textAlign: 'center', marginBottom: '0.25rem' }}>
         <h1 style={{ color: '#FFD600', fontSize: '2.5rem', fontWeight: 'bold', marginBottom: 0, display: 'inline-block' }}>
           {username}'s Board
         </h1>
         
-        
-        {!readOnly && (
-          <button
-            onClick={async () => {
-              if (autoSaveTimeout.current) {
-                clearTimeout(autoSaveTimeout.current);
-                autoSaveTimeout.current = null;
-              }
-              if (typeof onSave === 'function' && username) {
-                await onSave({
-                  boardContent,
-                  selectedSquares: Array.from(selectedSquares),
-                  usedGolfers: Array.from(usedGolfers),
-                  lastSaved: new Date().toISOString()
-                });
-              }
-              if (typeof onLeaderboardNav === 'function') {
-                onLeaderboardNav();
-              }
-            }}
-            style={{
-              position: 'absolute',
-              left: 545,
-              top: '48%',
-              transform: 'translateY(-50%)',
-              background: '#FFD600',
-              color: '#0d47a1',
-              fontWeight: 'bold',
-              fontSize: '1.1rem',
-              border: 'none',
-              borderRadius: '1rem',
-              padding: '0.5rem 1.5rem',
-              cursor: 'pointer',
-            }}
-          >
-            Leaderboard
-          </button>
-        )}
+        <button
+          onClick={async () => {
+            if (autoSaveTimeout.current) {
+              clearTimeout(autoSaveTimeout.current);
+              autoSaveTimeout.current = null;
+            }
+            if (!readOnly && typeof onSave === 'function' && username) {
+              await onSave({
+                boardContent,
+                selectedSquares: Array.from(selectedSquares),
+                usedGolfers: Array.from(usedGolfers),
+                lastSaved: new Date().toISOString()
+              });
+            }
+            if (typeof onLeaderboardNav === 'function') {
+              onLeaderboardNav();
+            }
+          }}
+          style={{
+            position: 'absolute',
+            left: 545,
+            top: '48%',
+            transform: 'translateY(-50%)',
+            background: '#FFD600',
+            color: '#0d47a1',
+            fontWeight: 'bold',
+            fontSize: '1.1rem',
+            border: 'none',
+            borderRadius: '1rem',
+            padding: '0.5rem 1.5rem',
+            cursor: 'pointer',
+          }}
+        >
+          Leaderboard
+        </button>
       </div>
 
       {/* Back Button */}
