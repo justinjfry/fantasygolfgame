@@ -524,35 +524,28 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
       >
         {golferObj && golferObj.name ? (
           <>
-            <div style={{ 
-              position: 'absolute', 
-              top: '2px', 
-              right: '2px', 
-              background: '#FFD600', // yellow
-              color: '#0d47a1', // dark blue for contrast
-              borderRadius: '50%', 
-              width: '16px', 
-              height: '16px', 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center', 
-              fontSize: '10px',
-              fontWeight: 'bold'
-            }}>
-              ✓
-            </div>
-            <span style={{ 
-              fontSize: '0.75rem', 
-              color: '#2E7D32', 
+            {/* Score to par above golfer name */}
+            <span style={{
+              fontSize: '0.85em',
+              color: '#0d47a1',
               fontWeight: 'bold',
-              textShadow: '0 1px 2px rgba(0,0,0,0.1)'
-            }}>{golferObj.name}</span>
+              marginBottom: '2px',
+              display: 'block',
+            }}>E</span>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <span style={{ 
+                fontSize: '0.75rem', 
+                color: '#2E7D32', 
+                fontWeight: 'bold',
+                textShadow: '0 1px 2px rgba(0,0,0,0.1)'
+              }}>{golferObj.name}</span>
             <span style={{ 
-              fontSize: '0.8em', 
+              fontSize: '0.65em', 
               color: '#1B5E20', 
               fontWeight: 'bold',
               textShadow: '0 1px 2px rgba(0,0,0,0.1)'
             }}>{formatSalary(golferObj.salary)}</span>
+            </div>
           </>
                   ) : (
             isOrange ? (
