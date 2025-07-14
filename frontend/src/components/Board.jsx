@@ -718,6 +718,7 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
             <li style={{ marginBottom: '0.7rem' }}><b>1.</b> Drag players to fill squares on your board. *Double click a square to remove players</li>
             <li style={{ marginBottom: '0.7rem' }}><b>2.</b> Stay under salary budget for each color zone.</li>
             <li style={{ marginBottom: '0.7rem' }}><b>3.</b> Fill all 25 spaces to complete your board.</li>
+            <li style={{ marginBottom: '0.7rem' }}><b>4.</b> Best combined score of a line of five golfers in a row any direction wins.</li>
           </ol>
         </div>
       {/* Header with absolutely positioned Leaderboard Button */}
