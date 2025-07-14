@@ -7,6 +7,7 @@ const FileSync = require('lowdb/adapters/FileSync');
 const fs = require('fs');
 const bcrypt = require('bcryptjs');
 const session = require('express-session');
+const { Pool } = require('pg');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -104,6 +105,12 @@ const sampleCourses = [
 
 // Initialize sample data
 courses = sampleCourses;
+
+// PostgreSQL pool setup
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+});
 
 // API Routes
 
@@ -238,37 +245,57 @@ app.get('/api/games/:gameId/leaderboard', (req, res) => {
 });
 
 // Save or update a user's board (requires authentication)
-app.post('/api/boards', requireAuth, (req, res) => {
+app.post('/api/boards', requireAuth, async (req, res) => {
   const { board } = req.body;
   const username = req.session.user;
-  // Remove any old board for this user
-  db.get('boards').remove({ username }).write();
-  // Save new board for this user
-  db.get('boards').push({ username, board }).write();
-  res.json({ success: true });
+  try {
+    await pool.query(
+      'INSERT INTO boards (username, board) VALUES ($1, $2) ON CONFLICT (username) DO UPDATE SET board = EXCLUDED.board',
+      [username, board]
+    );
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Error saving board:', err);
+    res.status(500).json({ error: 'Failed to save board' });
+  }
 });
 
 // Get current user's board (requires authentication)
-app.get('/api/boards/my', requireAuth, (req, res) => {
+app.get('/api/boards/my', requireAuth, async (req, res) => {
   const username = req.session.user;
-  const board = db.get('boards').find({ username }).value();
-  if (!board) return res.status(404).json({ error: 'Board not found' });
-  res.json({ board: board.board });
+  try {
+    const result = await pool.query('SELECT board FROM boards WHERE username = $1', [username]);
+    if (result.rows.length === 0) return res.status(404).json({ error: 'Board not found' });
+    res.json({ board: result.rows[0].board });
+  } catch (err) {
+    console.error('Error loading board:', err);
+    res.status(500).json({ error: 'Failed to load board' });
+  }
 });
 
 // Get a specific user's board (public read-only access)
-app.get('/api/boards/:username', (req, res) => {
+app.get('/api/boards/:username', async (req, res) => {
   const { username } = req.params;
-  const board = db.get('boards').find({ username }).value();
-  if (!board) return res.status(404).json({ error: 'Board not found' });
-  res.json({ board: board.board });
+  try {
+    const result = await pool.query('SELECT board FROM boards WHERE username = $1', [username]);
+    if (result.rows.length === 0) return res.status(404).json({ error: 'Board not found' });
+    res.json({ board: result.rows[0].board });
+  } catch (err) {
+    console.error('Error loading board:', err);
+    res.status(500).json({ error: 'Failed to load board' });
+  }
 });
 
 // Get all usernames who have saved boards (for leaderboard)
-app.get('/api/boards', (req, res) => {
-  const boards = db.get('boards').value() || [];
-  const usernames = boards.map(board => board.username);
-  res.json({ usernames });
+app.get('/api/boards', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT username FROM boards');
+    const usernames = result.rows.map(row => row.username);
+    res.json({ usernames });
+  } catch (err) {
+    console.error('Error loading usernames:', err);
+    res.status(500).json({ error: 'Failed to load usernames' });
+  }
 });
 
 app.post('/api/register', async (req, res) => {
