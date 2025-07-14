@@ -469,6 +469,14 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
   };
   const bingoLines = getBingoLines();
 
+  // Helper to get dynamic font size for golfer names
+  const getNameFontSize = (name) => {
+    if (name.length <= 14) return '0.75rem';
+    if (name.length <= 18) return '0.68rem';
+    if (name.length <= 22) return '0.60rem';
+    return '0.52rem'; // for very long names
+  };
+
   const renderSquare = (index, golferObj) => {
     const isSelected = selectedSquares.has(index);
     const isFilled = golferObj && golferObj.name;
@@ -544,17 +552,17 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
             }}>E</span>
             {/* Golfer name with dynamic font size */}
             <span style={{
-              fontSize: golferObj.name.length > 16 ? '0.65rem' : '0.75rem',
+              fontSize: getNameFontSize(golferObj.name),
               color: '#2E7D32',
               fontWeight: 'bold',
               textShadow: '0 1px 2px rgba(0,0,0,0.1)',
               minHeight: '18px',
               maxWidth: '90%',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
               textAlign: 'center',
               marginBottom: '2px',
+              wordBreak: 'break-word',
+              lineHeight: 1.1,
+              whiteSpace: 'normal',
             }}>{golferObj.name}</span>
             {/* Salary */}
             <span style={{
