@@ -291,7 +291,10 @@ app.get('/api/boards', async (req, res) => {
 });
 
 // TEMPORARY: Delete a user's board by username (for admin cleanup)
-app.delete('/api/delete-board/:username', async (req, res) => {
+app.delete('/api/delete-board/:username', deleteBoardHandler);
+app.get('/api/delete-board/:username', deleteBoardHandler);
+
+async function deleteBoardHandler(req, res) {
   const { username } = req.params;
   try {
     await pool.query('DELETE FROM boards WHERE username = $1', [username]);
@@ -300,7 +303,7 @@ app.delete('/api/delete-board/:username', async (req, res) => {
     console.error('Error deleting board:', err);
     res.status(500).json({ error: 'Failed to delete board' });
   }
-});
+}
 
 app.post('/api/register', async (req, res) => {
   const { username, password } = req.body;
