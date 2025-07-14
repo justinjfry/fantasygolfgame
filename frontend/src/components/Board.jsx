@@ -472,10 +472,10 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
   // Helper to get dynamic font size for golfer names to fit in a fixed width
   const getNameFontSize = (name) => {
     if (name.length <= 14) return '0.75rem';
-    if (name.length <= 18) return '0.68rem';
-    if (name.length <= 22) return '0.60rem';
-    if (name.length <= 28) return '0.52rem';
-    return '0.45rem'; // for very long names
+    if (name.length <= 18) return '0.62rem';
+    if (name.length <= 22) return '0.54rem';
+    if (name.length <= 28) return '0.46rem';
+    return '0.40rem'; // for very long names
   };
 
   const renderSquare = (index, golferObj) => {
@@ -567,7 +567,7 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
                 textShadow: '0 1px 2px rgba(0,0,0,0.1)',
                 textAlign: 'center',
                 whiteSpace: 'nowrap',
-                overflow: 'hidden',
+                overflow: 'visible',
                 maxWidth: '90%',
                 lineHeight: 1.1,
                 letterSpacing: '0.01em',
