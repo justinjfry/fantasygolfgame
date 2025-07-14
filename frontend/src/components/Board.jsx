@@ -469,12 +469,13 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
   };
   const bingoLines = getBingoLines();
 
-  // Helper to get dynamic font size for golfer names
+  // Helper to get dynamic font size for golfer names to fit in a fixed width
   const getNameFontSize = (name) => {
     if (name.length <= 14) return '0.75rem';
     if (name.length <= 18) return '0.68rem';
     if (name.length <= 22) return '0.60rem';
-    return '0.52rem'; // for very long names
+    if (name.length <= 28) return '0.52rem';
+    return '0.45rem'; // for very long names
   };
 
   const renderSquare = (index, golferObj) => {
@@ -550,20 +551,28 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
               minHeight: '18px',
               display: 'block',
             }}>E</span>
-            {/* Golfer name with dynamic font size */}
-            <span style={{
-              fontSize: getNameFontSize(golferObj.name),
-              color: '#2E7D32',
-              fontWeight: 'bold',
-              textShadow: '0 1px 2px rgba(0,0,0,0.1)',
-              minHeight: '18px',
-              maxWidth: '90%',
-              textAlign: 'center',
+            {/* Golfer name with dynamic font size and fixed height */}
+            <div style={{
+              height: '1.5em', // fixed height for name row
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
               marginBottom: '2px',
-              wordBreak: 'break-word',
-              lineHeight: 1.1,
-              whiteSpace: 'normal',
-            }}>{golferObj.name}</span>
+            }}>
+              <span style={{
+                fontSize: getNameFontSize(golferObj.name),
+                color: '#2E7D32',
+                fontWeight: 'bold',
+                textShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                textAlign: 'center',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                maxWidth: '90%',
+                lineHeight: 1.1,
+                letterSpacing: '0.01em',
+              }}>{golferObj.name}</span>
+            </div>
             {/* Salary */}
             <span style={{
               fontSize: '0.65em',
