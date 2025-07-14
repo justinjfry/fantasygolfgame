@@ -482,17 +482,15 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
     }
     const isWhite = !isGreen && !isOrange && !isBabyBlue && !isLightMagenta;
     
+    const disableInteractions = readOnly || boardsLocked;
     return (
       <div
         key={index}
-        onClick={handleSquareClick ? () => handleSquareClick(index) : undefined}
-        onDoubleClick={handleSquareClear ? () => handleSquareClear(index) : undefined}
-        onContextMenu={handleSquareClear ? (e) => {
-          e.preventDefault();
-          handleSquareClear(index);
-        } : undefined}
-        onDragOver={handleDragOver ? handleDragOver : undefined}
-        onDrop={handleDrop ? (e) => handleDrop(e, index) : undefined}
+        onClick={disableInteractions ? undefined : (handleSquareClick ? () => handleSquareClick(index) : undefined)}
+        onDoubleClick={disableInteractions ? undefined : (handleSquareClear ? () => handleSquareClear(index) : undefined)}
+        onContextMenu={disableInteractions ? undefined : (handleSquareClear ? (e) => { e.preventDefault(); handleSquareClear(index); } : undefined)}
+        onDragOver={disableInteractions ? undefined : (handleDragOver ? handleDragOver : undefined)}
+        onDrop={disableInteractions ? undefined : (handleDrop ? (e) => handleDrop(e, index) : undefined)}
         style={{
           width: '80px',
           height: '80px',
@@ -514,7 +512,7 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
           boxShadow: isFilled ? '0 4px 12px rgba(46, 125, 50, 0.4)' : '0 2px 6px rgba(0,0,0,0.1)',
           transform: isFilled ? 'scale(1.02)' : 'scale(1)',
         }}
-        title="Left click to select, Right click or Double click to clear"
+        title={disableInteractions ? undefined : "Left click to select, Right click or Double click to clear"}
       >
         {golferObj && golferObj.name ? (
           <>
