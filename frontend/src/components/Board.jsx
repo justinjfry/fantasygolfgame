@@ -203,13 +203,13 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
   }, [boardContent, selectedSquares, usedGolfers, username, onSave, readOnly]);
 
   // If readOnly, disable all editing handlers
-  const handleDragStart = (readOnly) ? undefined : (e, golfer) => {
+  const handleDragStart = readOnly ? undefined : (e, golfer) => {
     if (!usedGolfers.has(golfer)) {
       setDraggedGolfer(golfer);
     }
   };
-  const handleDragOver = (readOnly) ? undefined : (e) => { if (e) e.preventDefault(); };
-  const handleDrop = (readOnly) ? undefined : (e, index) => {
+  const handleDragOver = readOnly ? undefined : (e) => { if (e) e.preventDefault(); };
+  const handleDrop = readOnly ? undefined : (e, index) => {
     if (e) e.preventDefault();
     if (!draggedGolfer || usedGolfers.has(draggedGolfer.name)) return;
 
@@ -332,7 +332,7 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
     }
   };
 
-  const handleSquareClick = (index) => {
+  const handleSquareClick = readOnly ? undefined : (index) => {
     const newSelected = new Set(selectedSquares);
     if (newSelected.has(index)) {
       newSelected.delete(index);
@@ -342,7 +342,7 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
     setSelectedSquares(newSelected);
   };
 
-  const handleSquareClear = (index) => {
+  const handleSquareClear = readOnly ? undefined : (index) => {
     const currentContent = boardContent[index];
     if (currentContent && currentContent.name) {
       const newUsedGolfers = new Set(usedGolfers);
@@ -359,7 +359,7 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
     setSelectedSquares(newSelected);
   };
 
-  const handleClearBoard = () => {
+  const handleClearBoard = readOnly ? undefined : () => {
     if (window.confirm('Are you sure you want to clear the entire board? This will remove all placed golfers.')) {
       // Reset board to initial state
       setBoardContent(Array(25).fill('Select Golfer'));
@@ -500,7 +500,7 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          cursor: 'pointer',
+          cursor: disableInteractions ? 'not-allowed' : 'pointer',
           fontSize: '0.8rem',
           fontWeight: 'bold',
           color: isSelected ? '#0d47a1' : '#333',
@@ -511,6 +511,8 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
           position: 'relative',
           boxShadow: isFilled ? '0 4px 12px rgba(46, 125, 50, 0.4)' : '0 2px 6px rgba(0,0,0,0.1)',
           transform: isFilled ? 'scale(1.02)' : 'scale(1)',
+          pointerEvents: disableInteractions ? 'none' : 'auto',
+          opacity: disableInteractions ? 0.6 : 1,
         }}
         title={disableInteractions ? undefined : "Left click to select, Right click or Double click to clear"}
       >
