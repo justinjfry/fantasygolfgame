@@ -469,14 +469,15 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
   };
   const bingoLines = getBingoLines();
 
-  // Helper to get dynamic font size for golfer names to fit in a fixed width and max 2 lines
+  // Helper to get dynamic font size for golfer names to fit in a fixed width, single line
   const getNameFontSize = (name) => {
-    if (name.length <= 14) return '0.75rem';
-    if (name.length <= 18) return '0.62rem';
-    if (name.length <= 22) return '0.54rem';
-    if (name.length <= 28) return '0.40rem';
-    if (name.length <= 34) return '0.32rem';
-    return '0.26rem'; // for extremely long names
+    if (name.length <= 12) return '0.85rem';
+    if (name.length <= 16) return '0.75rem';
+    if (name.length <= 20) return '0.62rem';
+    if (name.length <= 24) return '0.54rem';
+    if (name.length <= 28) return '0.46rem';
+    if (name.length <= 34) return '0.40rem';
+    return '0.36rem'; // for extremely long names
   };
 
   const renderSquare = (index, golferObj) => {
@@ -554,10 +555,10 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
             </div>
             {/* Name with fixed height and dynamic font size, centered between score and salary */}
             <div style={{
-              height: '2.2em', // exactly 2 lines tall
+              height: '2.2em', // fixed height for up to 2 lines
               width: '100%',
               display: 'flex',
-              alignItems: 'center',
+              alignItems: 'center', // center vertically
               justifyContent: 'center',
               margin: '0.2em 0',
               overflow: 'hidden',
@@ -571,9 +572,8 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
                 maxWidth: '90%',
                 lineHeight: 1.1,
                 letterSpacing: '0.01em',
-                whiteSpace: 'normal',
-                wordBreak: 'normal',
-                hyphens: 'auto',
+                whiteSpace: 'normal', // allow wrapping
+                overflow: 'hidden',
                 display: 'block',
               }}>{golferObj.name}</span>
             </div>
