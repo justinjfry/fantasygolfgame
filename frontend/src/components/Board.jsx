@@ -553,12 +553,12 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
             }}>E</span>
             {/* Golfer name with dynamic font size and fixed height */}
             <div style={{
-              height: '1.5em', // fixed height for name row
+              height: '2.2em', // fixed height for name row (fits up to 2 lines)
               width: '100%',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              marginBottom: '2px',
+              overflow: 'hidden',
             }}>
               <span style={{
                 fontSize: getNameFontSize(golferObj.name),
@@ -566,13 +566,16 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
                 fontWeight: 'bold',
                 textShadow: '0 1px 2px rgba(0,0,0,0.1)',
                 textAlign: 'center',
-                whiteSpace: 'nowrap',
-                overflow: 'visible',
                 maxWidth: '90%',
                 lineHeight: 1.1,
                 letterSpacing: '0.01em',
+                whiteSpace: 'normal',
+                wordBreak: 'break-word',
+                display: 'block',
               }}>{golferObj.name}</span>
             </div>
+            {/* Uniform margin below name container before salary */}
+            <div style={{ height: '0.3em' }} />
             {/* Salary */}
             <span style={{
               fontSize: '0.65em',
