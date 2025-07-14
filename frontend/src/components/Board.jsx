@@ -604,6 +604,8 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
     }
   }));
 
+  const isOwnBoard = typeof onSave === 'function';
+
   return (
     <div
       style={{
@@ -648,41 +650,43 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
           {username}'s Board
         </h1>
         
-        <button
-          onClick={async () => {
-            if (autoSaveTimeout.current) {
-              clearTimeout(autoSaveTimeout.current);
-              autoSaveTimeout.current = null;
-            }
-            if (!readOnly && typeof onSave === 'function' && username) {
-              await onSave({
-                boardContent,
-                selectedSquares: Array.from(selectedSquares),
-                usedGolfers: Array.from(usedGolfers),
-                lastSaved: new Date().toISOString()
-              });
-            }
-            if (typeof onLeaderboardNav === 'function') {
-              onLeaderboardNav();
-            }
-          }}
-          style={{
-            position: 'absolute',
-            left: 545,
-            top: '48%',
-            transform: 'translateY(-50%)',
-            background: '#FFD600',
-            color: '#0d47a1',
-            fontWeight: 'bold',
-            fontSize: '1.1rem',
-            border: 'none',
-            borderRadius: '1rem',
-            padding: '0.5rem 1.5rem',
-            cursor: 'pointer',
-          }}
-        >
-          Leaderboard
-        </button>
+        {(isOwnBoard || !readOnly) && (
+          <button
+            onClick={async () => {
+              if (autoSaveTimeout.current) {
+                clearTimeout(autoSaveTimeout.current);
+                autoSaveTimeout.current = null;
+              }
+              if (!readOnly && typeof onSave === 'function' && username) {
+                await onSave({
+                  boardContent,
+                  selectedSquares: Array.from(selectedSquares),
+                  usedGolfers: Array.from(usedGolfers),
+                  lastSaved: new Date().toISOString()
+                });
+              }
+              if (typeof onLeaderboardNav === 'function') {
+                onLeaderboardNav();
+              }
+            }}
+            style={{
+              position: 'absolute',
+              left: 545,
+              top: '48%',
+              transform: 'translateY(-50%)',
+              background: '#FFD600',
+              color: '#0d47a1',
+              fontWeight: 'bold',
+              fontSize: '1.1rem',
+              border: 'none',
+              borderRadius: '1rem',
+              padding: '0.5rem 1.5rem',
+              cursor: 'pointer',
+            }}
+          >
+            Leaderboard
+          </button>
+        )}
       </div>
 
       {/* Back Button */}
