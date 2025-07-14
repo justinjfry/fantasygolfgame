@@ -36,6 +36,7 @@ app.use(session({
   cookie: {
     secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
+    sameSite: 'none', // Allow cross-site cookies for frontend/backend on different subdomains
     maxAge: 24 * 60 * 60 * 1000 // 24 hours
   }
 }));
