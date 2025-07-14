@@ -213,6 +213,12 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
     if (e) e.preventDefault();
     if (!draggedGolfer || usedGolfers.has(draggedGolfer.name)) return;
 
+    // Prevent dropping on a square that already has a golfer
+    if (boardContent[index] && boardContent[index].name) {
+      alert('Square already selected');
+      return;
+    }
+
     // Check if this is an orange square
     const isOrange = [0, 4, 20, 24].includes(index);
     // Check if this is a green square (excluding orange squares)
