@@ -231,6 +231,15 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
     setBoardContent(newBoardContent);
     setUsedGolfers(new Set([...usedGolfers, draggedGolfer.name]));
     setDraggedGolfer(null);
+    // Immediately save after a change
+    if (typeof onSave === 'function') {
+      onSave({
+        boardContent: newBoardContent,
+        selectedSquares: Array.from(selectedSquares),
+        usedGolfers: Array.from(new Set([...usedGolfers, draggedGolfer.name])),
+        lastSaved: new Date().toISOString()
+      });
+    }
   };
 
   const handleSquareClick = readOnly ? undefined : (index) => {
