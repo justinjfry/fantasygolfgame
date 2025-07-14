@@ -45,6 +45,8 @@ let players = [];
 let courses = [];
 let games = [];
 
+let boardsLocked = false; // Set to true to lock all boards
+
 const adapter = new FileSync('boards.json');
 const db = low(adapter);
 
@@ -221,6 +223,11 @@ app.get('/api/games/:gameId/leaderboard', (req, res) => {
 
 // Save or update a user's board (requires authentication)
 app.post('/api/boards', requireAuth, async (req, res) => {
+  // Check if boards are locked
+  if (boardsLocked) {
+    return res.status(423).json({ error: 'Boards are currently locked. Tournament has started!' });
+  }
+  
   const { board } = req.body;
   const username = req.session.user;
   try {
@@ -332,6 +339,10 @@ app.get('/api/auth/check', (req, res) => {
     res.json({ authenticated: false });
   }
 });
+
+
+
+
 
 app.listen(PORT, () => {
   console.log(`Fantasy Golf Backend running on port ${PORT}`);

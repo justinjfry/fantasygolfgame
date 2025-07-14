@@ -15,6 +15,7 @@ export default function App() {
   const [authError, setAuthError] = useState('');
   const [isRegister, setIsRegister] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [boardsLocked, setBoardsLocked] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -71,15 +72,24 @@ export default function App() {
     setCurrentPage('login');
   };
 
+
+
   // Save board to backend (uses session authentication)
   const handleBoardSave = useCallback(async (boardContent) => {
     try {
       const res = await api.post('/api/boards', { board: boardContent });
       // Optionally handle save status
     } catch (err) {
-      console.error('Save error:', err);
+      if (err.response && err.response.status === 423) {
+        // Boards are locked
+        alert('Boards are currently locked! Tournament has started.');
+      } else {
+        console.error('Save error:', err);
+      }
     }
   }, []);
+
+
 
   // Load current user's board from backend (uses session authentication)
   const loadMyBoardFromBackend = async () => {
@@ -203,6 +213,7 @@ export default function App() {
       loadBoard={loadBoardFromBackend}
       onLeaderboardNav={() => setCurrentPage('leaderboard')}
       boardData={userBoardData}
+      boardsLocked={boardsLocked}
     />;
   }
   if (currentPage === 'leaderboard') {
@@ -442,6 +453,8 @@ export default function App() {
           </form>
         )}
       </div>
+      
+      
     </div>
   );
 }
