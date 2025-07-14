@@ -45,7 +45,7 @@ let players = [];
 let courses = [];
 let games = [];
 
-let boardsLocked = false; // Set to true to lock all boards
+let boardsLocked = true; // Set to true to lock all boards
 
 const adapter = new FileSync('boards.json');
 const db = low(adapter);
