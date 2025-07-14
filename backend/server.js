@@ -47,6 +47,11 @@ let games = [];
 
 let boardsLocked = true; // Set to true to lock all boards
 
+// Add lock status endpoint
+app.get('/api/boards/lock-status', (req, res) => {
+  res.json({ locked: boardsLocked });
+});
+
 const adapter = new FileSync('boards.json');
 const db = low(adapter);
 
