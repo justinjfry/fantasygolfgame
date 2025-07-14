@@ -534,60 +534,78 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
         title={disableInteractions ? undefined : "Left click to select, Right click or Double click to clear"}
       >
         {golferObj && golferObj.name ? (
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center', // center all content vertically
-            height: '100%',
-            width: '100%',
-            paddingTop: 0,
-          }}>
-            {/* Score to par */}
-            <div style={{ height: '1em', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', marginBottom: '-0.2em' }}>
-              <span style={{
-                fontSize: '0.85em',
-                color: '#0d47a1',
-                fontWeight: 'bold',
-                minHeight: '16px',
-                display: 'block',
-              }}>E</span>
-            </div>
-            {/* Name with fixed height and dynamic font size, centered between score and salary */}
+          <>
+            {/* Red check mark in top right when filled */}
+            <span
+              style={{
+                position: 'absolute',
+                top: '6px',
+                right: '8px',
+                color: 'red',
+                fontSize: '1.3em',
+                zIndex: 2,
+                pointerEvents: 'none',
+                userSelect: 'none',
+              }}
+              title="Filled"
+            >
+              ✔️
+            </span>
             <div style={{
-              height: '2.2em', // fixed height for up to 2 lines
-              width: '100%',
               display: 'flex',
-              alignItems: 'center', // center vertically
-              justifyContent: 'center',
-              margin: '0.35em 0 0.1em 0', // more top margin to move name lower
-              overflow: 'hidden',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center', // center all content vertically
+              height: '100%',
+              width: '100%',
+              paddingTop: 0,
             }}>
-              <span style={{
-                fontSize: getNameFontSize(golferObj.name),
-                color: '#2E7D32',
-                fontWeight: 'bold',
-                textShadow: '0 1px 2px rgba(0,0,0,0.1)',
-                textAlign: 'center',
-                maxWidth: '90%',
-                lineHeight: 1.1,
-                letterSpacing: '0.01em',
-                whiteSpace: 'normal', // allow wrapping
+              {/* Score to par */}
+              <div style={{ height: '1em', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', marginBottom: '-0.2em' }}>
+                <span style={{
+                  fontSize: '0.85em',
+                  color: '#0d47a1',
+                  fontWeight: 'bold',
+                  minHeight: '16px',
+                  display: 'block',
+                }}>E</span>
+              </div>
+              {/* Name with fixed height and dynamic font size, centered between score and salary */}
+              <div style={{
+                height: '2.2em', // fixed height for up to 2 lines
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center', // center vertically
+                justifyContent: 'center',
+                margin: '0.35em 0 0.1em 0', // more top margin to move name lower
                 overflow: 'hidden',
-                display: 'block',
-              }}>{golferObj.name}</span>
+              }}>
+                <span style={{
+                  fontSize: getNameFontSize(golferObj.name),
+                  color: '#2E7D32',
+                  fontWeight: 'bold',
+                  textShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                  textAlign: 'center',
+                  maxWidth: '90%',
+                  lineHeight: 1.1,
+                  letterSpacing: '0.01em',
+                  whiteSpace: 'normal', // allow wrapping
+                  overflow: 'hidden',
+                  display: 'block',
+                }}>{golferObj.name}</span>
+              </div>
+              <div style={{ height: '1.2em', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', marginTop: '0.5em' }}>
+                <span style={{
+                  fontSize: '0.65em',
+                  color: '#1B5E20',
+                  fontWeight: 'bold',
+                  textShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                  minHeight: '16px',
+                  marginBottom: 0,
+                }}>{formatSalary(golferObj.salary)}</span>
+              </div>
             </div>
-            <div style={{ height: '1.2em', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', marginTop: '0.5em' }}>
-              <span style={{
-                fontSize: '0.65em',
-                color: '#1B5E20',
-                fontWeight: 'bold',
-                textShadow: '0 1px 2px rgba(0,0,0,0.1)',
-                minHeight: '16px',
-                marginBottom: 0,
-              }}>{formatSalary(golferObj.salary)}</span>
-            </div>
-          </div>
+          </>
         ) : (
             isOrange ? (
               <>
