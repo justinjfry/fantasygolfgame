@@ -523,31 +523,50 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
         title={disableInteractions ? undefined : "Left click to select, Right click or Double click to clear"}
       >
         {golferObj && golferObj.name ? (
-          <>
-            {/* Score to par above golfer name */}
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'flex-start',
+            height: '100%',
+            width: '100%',
+            paddingTop: 0,
+          }}>
+            {/* Score to par */}
             <span style={{
               fontSize: '0.85em',
               color: '#0d47a1',
               fontWeight: 'bold',
+              marginTop: '6px',
               marginBottom: '2px',
+              minHeight: '18px',
               display: 'block',
             }}>E</span>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <span style={{ 
-                fontSize: '0.75rem', 
-                color: '#2E7D32', 
-                fontWeight: 'bold',
-                textShadow: '0 1px 2px rgba(0,0,0,0.1)'
-              }}>{golferObj.name}</span>
-            <span style={{ 
-              fontSize: '0.65em', 
-              color: '#1B5E20', 
+            {/* Golfer name with dynamic font size */}
+            <span style={{
+              fontSize: golferObj.name.length > 16 ? '0.65rem' : '0.75rem',
+              color: '#2E7D32',
               fontWeight: 'bold',
-              textShadow: '0 1px 2px rgba(0,0,0,0.1)'
+              textShadow: '0 1px 2px rgba(0,0,0,0.1)',
+              minHeight: '18px',
+              maxWidth: '90%',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              textAlign: 'center',
+              marginBottom: '2px',
+            }}>{golferObj.name}</span>
+            {/* Salary */}
+            <span style={{
+              fontSize: '0.65em',
+              color: '#1B5E20',
+              fontWeight: 'bold',
+              textShadow: '0 1px 2px rgba(0,0,0,0.1)',
+              minHeight: '16px',
+              marginBottom: 0,
             }}>{formatSalary(golferObj.salary)}</span>
-            </div>
-          </>
-                  ) : (
+          </div>
+        ) : (
             isOrange ? (
               <>
                 <span style={{ fontSize: '0.75em', color: '#0d47a1', fontWeight: 'bold' }}>avg remaining salary</span>
