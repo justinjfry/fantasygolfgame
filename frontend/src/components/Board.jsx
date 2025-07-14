@@ -332,7 +332,7 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
     }
   };
 
-  const handleSquareClick = (readOnly) => {
+  const handleSquareClick = (index) => {
     const newSelected = new Set(selectedSquares);
     if (newSelected.has(index)) {
       newSelected.delete(index);
@@ -342,7 +342,7 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
     setSelectedSquares(newSelected);
   };
 
-  const handleSquareClear = (readOnly) => {
+  const handleSquareClear = (index) => {
     const currentContent = boardContent[index];
     if (currentContent && currentContent.name) {
       const newUsedGolfers = new Set(usedGolfers);
@@ -359,7 +359,7 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
     setSelectedSquares(newSelected);
   };
 
-  const handleClearBoard = (readOnly) => {
+  const handleClearBoard = () => {
     if (window.confirm('Are you sure you want to clear the entire board? This will remove all placed golfers.')) {
       // Reset board to initial state
       setBoardContent(Array(25).fill('Select Golfer'));
