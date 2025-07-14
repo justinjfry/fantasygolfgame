@@ -290,6 +290,18 @@ app.get('/api/boards', async (req, res) => {
   }
 });
 
+// TEMPORARY: Delete a user's board by username (for admin cleanup)
+app.delete('/api/delete-board/:username', async (req, res) => {
+  const { username } = req.params;
+  try {
+    await pool.query('DELETE FROM boards WHERE username = $1', [username]);
+    res.json({ success: true, message: `Deleted board for user: ${username}` });
+  } catch (err) {
+    console.error('Error deleting board:', err);
+    res.status(500).json({ error: 'Failed to delete board' });
+  }
+});
+
 app.post('/api/register', async (req, res) => {
   const { username, password } = req.body;
   if (!username || !password) return res.status(400).json({ error: 'Username and password required' });
