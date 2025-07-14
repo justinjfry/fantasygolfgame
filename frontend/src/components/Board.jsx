@@ -562,13 +562,14 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              justifyContent: 'center', // center all content vertically
+              justifyContent: 'flex-start', // align content to top, more room for name
               height: '100%',
               width: '100%',
               paddingTop: 0,
+              position: 'relative',
             }}>
               {/* Score to par */}
-              <div style={{ height: '1em', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', marginBottom: '-0.2em' }}>
+              <div style={{ height: '1em', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', marginBottom: '-0.1em' }}>
                 <span style={{
                   fontSize: '0.85em',
                   color: '#0d47a1',
@@ -577,14 +578,14 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
                   display: 'block',
                 }}>E</span>
               </div>
-              {/* Name with fixed height and dynamic font size, centered between score and salary */}
+              {/* Name with increased height and less margin, centered between score and salary */}
               <div style={{
-                height: '2.2em', // fixed height for up to 2 lines
+                height: '2.8em', // increased height for up to 2 lines
                 width: '100%',
                 display: 'flex',
                 alignItems: 'center', // center vertically
                 justifyContent: 'center',
-                margin: '0.35em 0 0.1em 0', // more top margin to move name lower
+                margin: '0.15em 0 0.05em 0', // less top/bottom margin
                 overflow: 'hidden',
               }}>
                 <span style={{
@@ -593,7 +594,7 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
                   fontWeight: 'bold',
                   textShadow: '0 1px 2px rgba(0,0,0,0.1)',
                   textAlign: 'center',
-                  maxWidth: '90%',
+                  maxWidth: '95%',
                   lineHeight: 1.1,
                   letterSpacing: '0.01em',
                   whiteSpace: 'normal', // allow wrapping
@@ -601,9 +602,19 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
                   display: 'block',
                 }}>{golferObj.name}</span>
               </div>
-              <div style={{ height: '1.2em', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', marginTop: '0.5em' }}>
+              {/* Salary moved to bottom of square */}
+              <div style={{
+                position: 'absolute',
+                bottom: '4px',
+                left: 0,
+                width: '100%',
+                display: 'flex',
+                alignItems: 'flex-end',
+                justifyContent: 'center',
+                marginTop: 0,
+              }}>
                 <span style={{
-                  fontSize: '0.65em',
+                  fontSize: '0.7em',
                   color: '#1B5E20',
                   fontWeight: 'bold',
                   textShadow: '0 1px 2px rgba(0,0,0,0.1)',
