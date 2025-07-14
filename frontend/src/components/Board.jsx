@@ -224,32 +224,43 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
     // Check if this is a white square
     const isWhite = !isOrange && !isGreen && !isBabyBlue && !isLightMagenta;
 
-    // Check if this drop would complete any line
-    const linesWithThisSquare = bingoLines.filter(line => line.includes(index));
-    let wouldCompleteLine = false;
+    // Check if this drop would fill the last square of a color zone
+    let isLastSquareOfColor = false;
+    let colorName = '';
     
-    for (const line of linesWithThisSquare) {
-      // If this drop would complete the line (all other squares filled)
-      const otherSquares = line.filter(idx => idx !== index);
-      const allOthersFilled = otherSquares.every(idx => boardContent[idx] && boardContent[idx].name);
-      if (allOthersFilled) {
-        wouldCompleteLine = true;
-        break;
-      }
+    if (isOrange) {
+      const filledOrangeCount = orangeIndices.filter(idx => boardContent[idx] && boardContent[idx].name).length;
+      isLastSquareOfColor = filledOrangeCount === 3; // This would be the 4th (last) orange square
+      colorName = 'orange';
+    } else if (isGreen) {
+      const filledGreenCount = greenIndices.filter(idx => boardContent[idx] && boardContent[idx].name).length;
+      isLastSquareOfColor = filledGreenCount === 4; // This would be the 5th (last) green square
+      colorName = 'green';
+    } else if (isBabyBlue) {
+      const filledBabyBlueCount = babyBlueIndices.filter(idx => boardContent[idx] && boardContent[idx].name).length;
+      isLastSquareOfColor = filledBabyBlueCount === 3; // This would be the 4th (last) baby blue square
+      colorName = 'baby blue';
+    } else if (isLightMagenta) {
+      const filledLightMagentaCount = lightMagentaIndices.filter(idx => boardContent[idx] && boardContent[idx].name).length;
+      isLastSquareOfColor = filledLightMagentaCount === 3; // This would be the 4th (last) light magenta square
+      colorName = 'light magenta';
+    } else if (isWhite) {
+      const filledWhiteCount = whiteIndices.filter(idx => boardContent[idx] && boardContent[idx].name).length;
+      isLastSquareOfColor = filledWhiteCount === 11; // This would be the 12th (last) white square
+      colorName = 'white';
     }
 
-    // If this drop would complete a line, check salary constraints
-    if (wouldCompleteLine) {
+    // If this drop would fill the last square of a color zone, check salary constraints
+    if (isLastSquareOfColor) {
       if (isOrange) {
         // Calculate avg remaining salary for orange squares
         const filledOrangeSalaries = orangeIndices
           .map(idx => boardContent[idx])
           .filter(golfer => golfer && golfer.name)
           .reduce((sum, golfer) => sum + (golfer.salary || 0), 0);
-        const openOrangeCount = orangeIndices.filter(idx => !boardContent[idx] || !boardContent[idx].name).length;
-        const avgOrangeSalary = openOrangeCount > 0 ? (40000 - filledOrangeSalaries) / openOrangeCount : 0;
+        const avgOrangeSalary = (40000 - filledOrangeSalaries) / 1; // Only 1 square left
         if (draggedGolfer.salary > avgOrangeSalary) {
-          alert('You can only complete a line if the last golfer is at or under the avg remaining salary for orange squares!');
+          alert(`You can only fill the last ${colorName} square if the golfer is at or under the remaining salary budget of ${formatSalary(avgOrangeSalary)}!`);
           return;
         }
       } else if (isGreen) {
@@ -258,10 +269,9 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
           .map(idx => boardContent[idx])
           .filter(golfer => golfer && golfer.name)
           .reduce((sum, golfer) => sum + (golfer.salary || 0), 0);
-        const openGreenCount = greenIndices.filter(idx => !boardContent[idx] || !boardContent[idx].name).length;
-        const avgGreenSalary = openGreenCount > 0 ? (50000 - filledGreenSalaries) / openGreenCount : 0;
+        const avgGreenSalary = (50000 - filledGreenSalaries) / 1; // Only 1 square left
         if (draggedGolfer.salary > avgGreenSalary) {
-          alert('You can only complete a line if the last golfer is at or under the avg remaining salary for green squares!');
+          alert(`You can only fill the last ${colorName} square if the golfer is at or under the remaining salary budget of ${formatSalary(avgGreenSalary)}!`);
           return;
         }
       } else if (isBabyBlue) {
@@ -270,10 +280,9 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
           .map(idx => boardContent[idx])
           .filter(golfer => golfer && golfer.name)
           .reduce((sum, golfer) => sum + (golfer.salary || 0), 0);
-        const openBabyBlueCount = babyBlueIndices.filter(idx => !boardContent[idx] || !boardContent[idx].name).length;
-        const avgBabyBlueSalary = openBabyBlueCount > 0 ? (40000 - filledBabyBlueSalaries) / openBabyBlueCount : 0;
+        const avgBabyBlueSalary = (40000 - filledBabyBlueSalaries) / 1; // Only 1 square left
         if (draggedGolfer.salary > avgBabyBlueSalary) {
-          alert('You can only complete a line if the last golfer is at or under the avg remaining salary for baby blue squares!');
+          alert(`You can only fill the last ${colorName} square if the golfer is at or under the remaining salary budget of ${formatSalary(avgBabyBlueSalary)}!`);
           return;
         }
       } else if (isLightMagenta) {
@@ -282,10 +291,9 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
           .map(idx => boardContent[idx])
           .filter(golfer => golfer && golfer.name)
           .reduce((sum, golfer) => sum + (golfer.salary || 0), 0);
-        const openLightMagentaCount = lightMagentaIndices.filter(idx => !boardContent[idx] || !boardContent[idx].name).length;
-        const avgLightMagentaSalary = openLightMagentaCount > 0 ? (40000 - filledLightMagentaSalaries) / openLightMagentaCount : 0;
+        const avgLightMagentaSalary = (40000 - filledLightMagentaSalaries) / 1; // Only 1 square left
         if (draggedGolfer.salary > avgLightMagentaSalary) {
-          alert('You can only complete a line if the last golfer is at or under the avg remaining salary for light magenta squares!');
+          alert(`You can only fill the last ${colorName} square if the golfer is at or under the remaining salary budget of ${formatSalary(avgLightMagentaSalary)}!`);
           return;
         }
       } else if (isWhite) {
@@ -294,10 +302,9 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
           .map(idx => boardContent[idx])
           .filter(golfer => golfer && golfer.name)
           .reduce((sum, golfer) => sum + (golfer.salary || 0), 0);
-        const openWhiteCount = whiteIndices.filter(idx => !boardContent[idx] || !boardContent[idx].name).length;
-        const avgWhiteSalary = openWhiteCount > 0 ? (160000 - filledWhiteSalaries) / openWhiteCount : 0;
+        const avgWhiteSalary = (80000 - filledWhiteSalaries) / 1; // Only 1 square left
         if (draggedGolfer.salary > avgWhiteSalary) {
-          alert('You can only complete a line if the last golfer is at or under the avg remaining salary for white squares!');
+          alert(`You can only fill the last ${colorName} square if the golfer is at or under the remaining salary budget of ${formatSalary(avgWhiteSalary)}!`);
           return;
         }
       }
