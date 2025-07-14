@@ -224,7 +224,7 @@ export default function App() {
       loadBoard={loadBoardFromBackend}
       onLeaderboardNav={() => setCurrentPage('leaderboard')}
       boardData={userBoardData}
-      boardsLocked={boardsLocked}
+      readOnly={boardsLocked}
     />;
   }
   if (currentPage === 'leaderboard') {
