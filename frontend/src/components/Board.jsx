@@ -475,7 +475,8 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
     if (name.length <= 18) return '0.62rem';
     if (name.length <= 22) return '0.54rem';
     if (name.length <= 28) return '0.40rem';
-    return '0.32rem'; // for extremely long names
+    if (name.length <= 34) return '0.32rem';
+    return '0.26rem'; // for extremely long names
   };
 
   const renderSquare = (index, golferObj) => {
