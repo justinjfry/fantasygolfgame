@@ -7,7 +7,7 @@ class GolfApiService {
     console.log('=== STARTING API CALL ===');
     try {
       // Use the Render backend URL for production
-      const url = 'https://fantasygolfgame-backend.onrender.com/api/golf/leaderboard';
+      const url = 'https://fantasygolfgame.onrender.com/api/golf/leaderboard';
       console.log('Fetching from backend proxy:', url);
       
       const res = await fetch(url);
