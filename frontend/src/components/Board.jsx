@@ -219,6 +219,25 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
       );
     }
     
+    // If still no match, try common name variations
+    if (!player) {
+      const nameVariations = {
+        'max greysermar': 'max greyserman',
+        'matt wallace': 'matt wallace',
+        'ludvig aberg': 'ludvig åberg',
+        'nicolai hojgaard': 'nicolai højgaard',
+        'max greyserman': 'max greyserman'
+      };
+      
+      const normalizedName = playerName.toLowerCase();
+      const variation = nameVariations[normalizedName];
+      if (variation) {
+        player = leaderboardData.find(p => 
+          p.name.toLowerCase() === variation
+        );
+      }
+    }
+    
     console.log('Found player:', player);
     
     // Return formatted score
