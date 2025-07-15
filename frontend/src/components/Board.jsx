@@ -205,11 +205,31 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
     if (!playerName) return 'E';
     console.log('Looking for player:', playerName);
     console.log('Available players:', leaderboardData.map(p => p.name));
-    const player = leaderboardData.find(p => 
+    
+    // Try exact match first
+    let player = leaderboardData.find(p => 
       p.name.toLowerCase() === playerName.toLowerCase()
     );
+    
+    // If no exact match, try partial match
+    if (!player) {
+      player = leaderboardData.find(p => 
+        p.name.toLowerCase().includes(playerName.toLowerCase()) ||
+        playerName.toLowerCase().includes(p.name.toLowerCase())
+      );
+    }
+    
     console.log('Found player:', player);
-    return player ? player.score : 'N/A';
+    
+    // Return formatted score
+    if (player) {
+      const score = player.score;
+      if (score === 0) return 'E';
+      if (score > 0) return `+${score}`;
+      return score.toString();
+    }
+    
+    return 'N/A';
   };
 
   // Debounced auto-save effect (backend only)
