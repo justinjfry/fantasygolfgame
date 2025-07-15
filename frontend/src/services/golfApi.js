@@ -6,8 +6,8 @@ class GolfApiService {
   async getCurrentLeaderboard() {
     console.log('=== STARTING API CALL ===');
     try {
-      // Call our backend proxy endpoint instead of SportsRadar directly
-      const url = '/api/golf/leaderboard';
+      // Use the Render backend URL for production
+      const url = 'https://fantasygolfgame-backend.onrender.com/api/golf/leaderboard';
       console.log('Fetching from backend proxy:', url);
       
       const res = await fetch(url);

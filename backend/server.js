@@ -89,11 +89,17 @@ const sampleCourses = [
 // Initialize sample data
 courses = sampleCourses;
 
-// PostgreSQL pool setup
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
-});
+// PostgreSQL pool setup - make it optional for development
+let pool;
+try {
+  pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+  });
+} catch (error) {
+  console.log('Database connection not available, using fallback mode');
+  pool = null;
+}
 
 // API Routes
 
@@ -273,6 +279,19 @@ app.post('/api/boards', requireAuth, async (req, res) => {
   
   const { board } = req.body;
   const username = req.session.user;
+  
+  if (!pool) {
+    // Fallback to file-based storage
+    try {
+      db.set(`boards.${username}`, board).write();
+      res.json({ success: true });
+    } catch (err) {
+      console.error('Error saving board:', err);
+      res.status(500).json({ error: 'Failed to save board' });
+    }
+    return;
+  }
+  
   try {
     await pool.query(
       'INSERT INTO boards (username, board) VALUES ($1, $2) ON CONFLICT (username) DO UPDATE SET board = EXCLUDED.board',
