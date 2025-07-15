@@ -203,9 +203,12 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
   // Helper function to get player score
   const getPlayerScore = (playerName) => {
     if (!playerName) return 'E';
+    console.log('Looking for player:', playerName);
+    console.log('Available players:', leaderboardData.map(p => p.name));
     const player = leaderboardData.find(p => 
       p.name.toLowerCase() === playerName.toLowerCase()
     );
+    console.log('Found player:', player);
     return player ? player.score : 'N/A';
   };
 

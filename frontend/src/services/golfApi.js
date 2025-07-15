@@ -4,18 +4,25 @@ class GolfApiService {
   async getCurrentLeaderboard() {
     try {
       const url = `https://www.thesportsdb.com/api/v1/json/${API_KEY}/searchevents.php?e=Genesis Scottish Open`;
+      console.log('Fetching from URL:', url);
       const res = await fetch(url);
       const data = await res.json();
+      console.log('API Response:', data);
       
       if (!data.event || !data.event.length) {
+        console.log('No events found');
         return [];
       }
 
       const event = data.event.find(ev => ev.strSeason === '2025') || data.event[0];
+      console.log('Selected event:', event);
       
       if (!event.strResult) {
+        console.log('No result data found');
         return [];
       }
+
+      console.log('Result string:', event.strResult);
 
       // Parse the leaderboard from strResult
       const leaderboard = [];
@@ -36,6 +43,7 @@ class GolfApiService {
         }
       }
 
+      console.log('Parsed leaderboard:', leaderboard);
       return leaderboard;
     } catch (error) {
       console.error('Error fetching leaderboard:', error);
