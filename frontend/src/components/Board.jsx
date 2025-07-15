@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
+import golfApi from '../services/golfApi';
 
 const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, onSave, readOnly = false, boardData }, ref) {
   const [selectedSquares, setSelectedSquares] = useState(new Set());
@@ -6,6 +7,8 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
   const [draggedGolfer, setDraggedGolfer] = useState(null);
   const [usedGolfers, setUsedGolfers] = useState(new Set());
   const [saveStatus, setSaveStatus] = useState(null);
+  const [leaderboardData, setLeaderboardData] = useState([]);
+  const [scoresLoading, setScoresLoading] = useState(true);
   const autoSaveTimeout = useRef();
   const saveStatusTimeout = useRef();
 
@@ -180,6 +183,31 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
       setUsedGolfers(new Set());
     }
   }, [boardData]);
+
+  // Fetch leaderboard data on mount
+  useEffect(() => {
+    const fetchScores = async () => {
+      try {
+        setScoresLoading(true);
+        const data = await golfApi.getCurrentLeaderboard();
+        setLeaderboardData(data);
+      } catch (error) {
+        console.error('Error fetching scores:', error);
+      } finally {
+        setScoresLoading(false);
+      }
+    };
+    fetchScores();
+  }, []);
+
+  // Helper function to get player score
+  const getPlayerScore = (playerName) => {
+    if (!playerName) return 'E';
+    const player = leaderboardData.find(p => 
+      p.name.toLowerCase() === playerName.toLowerCase()
+    );
+    return player ? player.score : 'N/A';
+  };
 
   // Debounced auto-save effect (backend only)
   useEffect(() => {
@@ -576,7 +604,9 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
                   fontWeight: 'bold',
                   minHeight: '16px',
                   display: 'block',
-                }}>E</span>
+                }}>
+                  {scoresLoading ? '...' : getPlayerScore(golferObj.name)}
+                </span>
               </div>
               {/* Name with increased height and less margin, centered between score and salary */}
               <div style={{
