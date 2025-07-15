@@ -8,6 +8,7 @@ const fs = require('fs');
 const bcrypt = require('bcryptjs');
 const session = require('express-session');
 const { Pool } = require('pg');
+const fetch = require('node-fetch');
 
 const app = express();
 app.set('trust proxy', 1); // trust first proxy for secure cookies on Render
@@ -119,6 +120,43 @@ app.post('/api/players', (req, res) => {
 // Get all courses
 app.get('/api/courses', (req, res) => {
   res.json(courses);
+});
+
+// SportsRadar API proxy endpoint
+app.get('/api/golf/leaderboard', async (req, res) => {
+  try {
+    const SPORTSRADAR_API_KEY = 'Y20xhFXST1FnsakFRq6Xsz4KlG9geeE2J8L4rHBs';
+    const SCOTTISH_OPEN_TOURNAMENT_ID = '312dbe0f-7d87-4f29-adeb-0746d4798749';
+    
+    const url = `https://api.sportradar.com/golf/trial/euro/v3/en/2025/tournaments/${SCOTTISH_OPEN_TOURNAMENT_ID}/leaderboard.json?api_key=${SPORTSRADAR_API_KEY}`;
+    
+    console.log('Backend fetching from SportsRadar:', url);
+    
+    const response = await fetch(url);
+    const data = await response.json();
+    
+    console.log('Backend received response with keys:', Object.keys(data));
+    
+    if (Array.isArray(data.leaderboard)) {
+      const leaderboard = data.leaderboard.map(player => ({
+        name: `${player.first_name} ${player.last_name}`,
+        score: player.score ?? 'E',
+        position: player.position ?? 'TBD',
+        total_score: player.strokes ?? 0,
+        rounds: player.rounds ?? [],
+        status: player.status ?? ''
+      }));
+      
+      console.log('Backend parsed leaderboard with', leaderboard.length, 'players');
+      res.json(leaderboard);
+    } else {
+      console.log('Backend: No valid leaderboard data found');
+      res.status(404).json({ error: 'No leaderboard data available' });
+    }
+  } catch (error) {
+    console.error('Backend SportsRadar API error:', error);
+    res.status(500).json({ error: 'Failed to fetch leaderboard data' });
+  }
 });
 
 // Get all games

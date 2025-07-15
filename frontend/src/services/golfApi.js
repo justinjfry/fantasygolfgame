@@ -4,57 +4,36 @@ const SCOTTISH_OPEN_TOURNAMENT_ID = '312dbe0f-7d87-4f29-adeb-0746d4798749';
 
 class GolfApiService {
   async getCurrentLeaderboard() {
+    console.log('=== STARTING API CALL ===');
     try {
-      // Use SportsRadar Tournament Leaderboard endpoint (corrected URL)
-      const url = `https://api.sportradar.com/golf/trial/euro/v3/en/2025/tournaments/${SCOTTISH_OPEN_TOURNAMENT_ID}/leaderboard.json?api_key=${SPORTSRADAR_API_KEY}`;
-      console.log('Fetching from SportsRadar URL:', url);
+      // Call our backend proxy endpoint instead of SportsRadar directly
+      const url = '/api/golf/leaderboard';
+      console.log('Fetching from backend proxy:', url);
       
       const res = await fetch(url);
-      const data = await res.json();
-      console.log('SportsRadar API Response:', data);
       
-      // Correct structure: leaderboard is an array of player objects
-      if (Array.isArray(data.leaderboard)) {
-        const leaderboard = data.leaderboard.map(player => ({
-          name: `${player.first_name} ${player.last_name}`,
-          score: player.score ?? 'E', // total to par
-          position: player.position ?? 'TBD',
-          total_score: player.strokes ?? 0,
-          rounds: player.rounds ?? [],
-          status: player.status ?? '',
-        }));
-        console.log('Parsed SportsRadar leaderboard:', leaderboard);
-        console.log('Total players found:', leaderboard.length);
-        // Log some key players to verify accuracy
-        const keyPlayers = ['Chris Gotterup', 'Rory McIlroy', 'Scottie Scheffler', 'Xander Schauffele'];
-        keyPlayers.forEach(name => {
-          const player = leaderboard.find(p => p.name.toLowerCase().includes(name.toLowerCase()));
-          if (player) {
-            console.log(`✅ ${name}: ${player.score}`);
-          } else {
-            console.log(`❌ ${name}: Not found`);
-          }
-        });
-        return leaderboard;
-      }
-
-      // Try alternative data structure
-      if (data.leaderboard && data.leaderboard.players) {
-        const leaderboard = data.leaderboard.players.map(player => ({
-          name: `${player.first_name} ${player.last_name}`,
-          score: player.total_to_par || 'E',
-          position: player.position || 'TBD',
-          total_score: player.total || 0,
-          rounds: player.rounds || []
-        }));
-        console.log('Parsed alternative structure:', leaderboard);
-        return leaderboard;
+      if (!res.ok) {
+        throw new Error(`Backend API failed with status: ${res.status}`);
       }
       
-      console.log('No valid leaderboard data found, using fallback.');
-      return this.getFallbackData();
+      const leaderboard = await res.json();
+      console.log('Backend API Response received!');
+      console.log('Total players found:', leaderboard.length);
+      
+      // Log some key players to verify accuracy
+      const keyPlayers = ['Chris Gotterup', 'Rory McIlroy', 'Scottie Scheffler', 'Xander Schauffele'];
+      keyPlayers.forEach(name => {
+        const player = leaderboard.find(p => p.name.toLowerCase().includes(name.toLowerCase()));
+        if (player) {
+          console.log(`✅ ${name}: ${player.score}`);
+        } else {
+          console.log(`❌ ${name}: Not found`);
+        }
+      });
+      
+      return leaderboard;
     } catch (error) {
-      console.error('Error fetching SportsRadar leaderboard:', error);
+      console.error('Error fetching leaderboard from backend:', error);
       // Fallback to accurate data if API fails
       console.log('Using accurate fallback data for Scottish Open 2025');
       return this.getFallbackData();
