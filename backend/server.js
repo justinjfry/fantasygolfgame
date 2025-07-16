@@ -325,18 +325,29 @@ app.get('/api/boards/:username', async (req, res) => {
     const result = await pool.query('SELECT board FROM boards WHERE username = $1', [username]);
     console.log(`DEBUG: Query result for "${username}":`, result.rows.length, 'rows found');
     
-    if (result.rows.length === 0) {
-      console.log(`DEBUG: No board found for "${username}"`);
-      
-      // Let's also try a case-insensitive search
-      const caseInsensitiveResult = await pool.query('SELECT username FROM boards WHERE LOWER(username) = LOWER($1)', [username]);
-      console.log(`DEBUG: Case-insensitive search for "${username}":`, caseInsensitiveResult.rows.length, 'matches found');
-      if (caseInsensitiveResult.rows.length > 0) {
-        console.log(`DEBUG: Found usernames with case-insensitive match:`, caseInsensitiveResult.rows.map(r => r.username));
+          if (result.rows.length === 0) {
+        console.log(`DEBUG: No board found for "${username}"`);
+        
+        // Let's also try a case-insensitive search
+        const caseInsensitiveResult = await pool.query('SELECT username FROM boards WHERE LOWER(username) = LOWER($1)', [username]);
+        console.log(`DEBUG: Case-insensitive search for "${username}":`, caseInsensitiveResult.rows.length, 'matches found');
+        if (caseInsensitiveResult.rows.length > 0) {
+          console.log(`DEBUG: Found usernames with case-insensitive match:`, caseInsensitiveResult.rows.map(r => r.username));
+        }
+        
+        // Let's also check what usernames contain "ArchDELUXE" (partial match)
+        const partialResult = await pool.query('SELECT username FROM boards WHERE username LIKE $1', [`%${username}%`]);
+        console.log(`DEBUG: Partial search for "${username}":`, partialResult.rows.length, 'matches found');
+        if (partialResult.rows.length > 0) {
+          console.log(`DEBUG: Found usernames with partial match:`, partialResult.rows.map(r => r.username));
+          partialResult.rows.forEach((row, index) => {
+            const charCodes = Array.from(row.username).map(char => char.charCodeAt(0));
+            console.log(`DEBUG: Partial match ${index} char codes:`, charCodes);
+          });
+        }
+        
+        return res.status(404).json({ error: 'Board not found' });
       }
-      
-      return res.status(404).json({ error: 'Board not found' });
-    }
     console.log(`DEBUG: Successfully returning board for "${username}"`);
     res.json({ board: result.rows[0].board });
   } catch (err) {
@@ -355,6 +366,9 @@ app.get('/api/boards', async (req, res) => {
     // Add detailed logging for each username
     usernames.forEach((username, index) => {
       console.log(`DEBUG: Username ${index}: "${username}" (length: ${username.length})`);
+      // Show the character codes to identify hidden characters
+      const charCodes = Array.from(username).map(char => char.charCodeAt(0));
+      console.log(`DEBUG: Username ${index} char codes:`, charCodes);
     });
     
     res.json({ usernames });
