@@ -669,7 +669,7 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
               }}>
                 <span style={{
                   fontSize: getNameFontSize(golferObj.name),
-                  color: '#2E7D32',
+                  color: '#0d47a1',
                   fontWeight: 'bold',
                   textShadow: '0 1px 2px rgba(0,0,0,0.1)',
                   textAlign: 'center',
@@ -694,7 +694,7 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
               }}>
                 <span style={{
                   fontSize: '0.7em',
-                  color: '#1B5E20',
+                  color: '#0d47a1',
                   fontWeight: 'bold',
                   textShadow: '0 1px 2px rgba(0,0,0,0.1)',
                   minHeight: '16px',
