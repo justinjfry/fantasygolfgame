@@ -251,6 +251,77 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
     return 'N/A';
   };
 
+  // Calculate best lines for this board
+  const calculateBestLines = () => {
+    if (!leaderboardData.length || scoresLoading) return new Set();
+
+    // Helper function to get player score as number
+    const getPlayerScoreAsNumber = (playerName) => {
+      if (!playerName || !playerName.name) return null;
+      
+      const player = leaderboardData.find(p => 
+        p.name.toLowerCase() === playerName.name.toLowerCase()
+      );
+      
+      if (!player) return null;
+      
+      const score = player.score;
+      if (score === 0 || score === 'E') return 0;
+      if (typeof score === 'number') return score;
+      if (typeof score === 'string') {
+        if (score.startsWith('+')) return parseInt(score.substring(1));
+        if (score.startsWith('-')) return parseInt(score);
+        return parseInt(score) || 0;
+      }
+      return 0;
+    };
+
+    // Define all 12 bingo lines
+    const bingoLines = [
+      // Rows
+      [0, 1, 2, 3, 4], [5, 6, 7, 8, 9], [10, 11, 12, 13, 14], [15, 16, 17, 18, 19], [20, 21, 22, 23, 24],
+      // Columns
+      [0, 5, 10, 15, 20], [1, 6, 11, 16, 21], [2, 7, 12, 17, 22], [3, 8, 13, 18, 23], [4, 9, 14, 19, 24],
+      // Diagonals
+      [0, 6, 12, 18, 24], [4, 8, 12, 16, 20]
+    ];
+
+    const lineScores = [];
+    bingoLines.forEach((line, index) => {
+      const scores = line.map(index => getPlayerScoreAsNumber(boardContent[index]));
+      
+      // Skip lines with any null scores (empty squares)
+      if (scores.some(score => score === null)) {
+        return;
+      }
+      
+      const totalScore = scores.reduce((sum, score) => sum + score, 0);
+      lineScores.push({
+        lineIndex: index,
+        indices: line,
+        totalScore: totalScore
+      });
+    });
+
+    // Find the best (lowest) score
+    if (lineScores.length === 0) return new Set();
+    
+    const bestScore = Math.min(...lineScores.map(line => line.totalScore));
+    
+    // Get all lines with the best score
+    const bestLines = lineScores.filter(line => line.totalScore === bestScore);
+    
+    // Collect all indices from best lines
+    const bestIndices = new Set();
+    bestLines.forEach(line => {
+      line.indices.forEach(index => bestIndices.add(index));
+    });
+
+    return bestIndices;
+  };
+
+  const bestLineIndices = calculateBestLines();
+
   // Debounced auto-save effect (backend only)
   useEffect(() => {
     if (readOnly || !username || typeof onSave !== 'function') return;
@@ -626,6 +697,27 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
                 title="Filled"
               >
                 ✔️
+              </span>
+            )}
+            
+            {/* Blue check mark for best line squares */}
+            {bestLineIndices.has(index) && (
+              <span
+                style={{
+                  position: 'absolute',
+                  top: '6px',
+                  right: '8px',
+                  color: '#0d47a1',
+                  fontSize: '1.1em',
+                  zIndex: 3,
+                  pointerEvents: 'none',
+                  userSelect: 'none',
+                  fontWeight: 'bold',
+                  textShadow: '0 1px 2px rgba(255,255,255,0.8)',
+                }}
+                title="Best Line"
+              >
+                ✓
               </span>
             )}
             <div style={{
