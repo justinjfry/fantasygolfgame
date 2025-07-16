@@ -581,7 +581,7 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
         style={{
           width: '80px',
           height: '80px',
-          border: isFilled ? '4px solid #2E7D32' : '3px solid #0d47a1',
+          border: isFilled ? '4px solid #0d47a1' : '3px solid #0d47a1',
           backgroundColor: backgroundColor,
           display: 'flex',
           flexDirection: 'column',
@@ -596,7 +596,7 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
           textAlign: 'center',
           padding: '4px',
           position: 'relative',
-          boxShadow: isFilled ? '0 4px 12px rgba(46, 125, 50, 0.4)' : '0 2px 6px rgba(0,0,0,0.1)',
+          boxShadow: isFilled ? '0 4px 12px rgba(13, 71, 161, 0.4)' : '0 2px 6px rgba(0,0,0,0.1)',
           transform: isFilled ? 'scale(1.02)' : 'scale(1)',
           pointerEvents: disableInteractions ? 'none' : 'auto',
           opacity: 1,
