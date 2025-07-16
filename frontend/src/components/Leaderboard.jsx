@@ -204,7 +204,7 @@ export default function Leaderboard({ onSelectUser, viewedUsername, viewedBoard,
                   <div style={{ 
                     fontSize: '0.9rem', 
                     fontWeight: 'bold',
-                    color: hasValidScore && bestScore.totalScore < 0 ? '#ff0000' : '#0d47a1'
+                    color: '#0d47a1'
                   }}>
                     {hasValidScore ? `Best Lineup: ${bestScore.totalScore}` : 'No complete lines'}
                   </div>
