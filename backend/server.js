@@ -320,9 +320,15 @@ app.get('/api/boards/my', requireAuth, async (req, res) => {
 // Get a specific user's board (public read-only access)
 app.get('/api/boards/:username', async (req, res) => {
   const { username } = req.params;
+  console.log(`DEBUG: Requesting board for username: "${username}"`);
   try {
     const result = await pool.query('SELECT board FROM boards WHERE username = $1', [username]);
-    if (result.rows.length === 0) return res.status(404).json({ error: 'Board not found' });
+    console.log(`DEBUG: Query result for "${username}":`, result.rows.length, 'rows found');
+    if (result.rows.length === 0) {
+      console.log(`DEBUG: No board found for "${username}"`);
+      return res.status(404).json({ error: 'Board not found' });
+    }
+    console.log(`DEBUG: Successfully returning board for "${username}"`);
     res.json({ board: result.rows[0].board });
   } catch (err) {
     console.error('Error loading board:', err);
@@ -335,6 +341,7 @@ app.get('/api/boards', async (req, res) => {
   try {
     const result = await pool.query('SELECT username FROM boards');
     const usernames = result.rows.map(row => row.username);
+    console.log('DEBUG: All usernames in database:', usernames);
     res.json({ usernames });
   } catch (err) {
     console.error('Error loading usernames:', err);
