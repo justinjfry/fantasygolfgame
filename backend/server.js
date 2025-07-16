@@ -132,9 +132,9 @@ app.get('/api/courses', (req, res) => {
 app.get('/api/golf/leaderboard', async (req, res) => {
   try {
     const SPORTSRADAR_API_KEY = 'Y20xhFXST1FnsakFRq6Xsz4KlG9geeE2J8L4rHBs';
-    const SCOTTISH_OPEN_TOURNAMENT_ID = '312dbe0f-7d87-4f29-adeb-0746d4798749';
+    const BRITISH_OPEN_TOURNAMENT_ID = '974fd177-eb3c-47fa-a632-b9cf5a57f134';
     
-    const url = `https://api.sportradar.com/golf/trial/euro/v3/en/2025/tournaments/${SCOTTISH_OPEN_TOURNAMENT_ID}/leaderboard.json?api_key=${SPORTSRADAR_API_KEY}`;
+    const url = `https://api.sportradar.com/golf/trial/euro/v3/en/2025/tournaments/${BRITISH_OPEN_TOURNAMENT_ID}/leaderboard.json?api_key=${SPORTSRADAR_API_KEY}`;
     
     console.log('Backend fetching from SportsRadar:', url);
     
