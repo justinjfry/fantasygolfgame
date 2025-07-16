@@ -194,8 +194,9 @@ export default function Leaderboard({ onSelectUser, viewedUsername, viewedBoard,
                     <span style={{ 
                       fontSize: '1.5rem', 
                       fontWeight: 'bold', 
-                      color: index === 0 ? '#FFD700' : '#0d47a1',
-                      minWidth: '2rem'
+                      color: index === 0 ? '#FFA500' : '#0d47a1',
+                      minWidth: '2rem',
+                      display: 'block'
                     }}>
                       {index + 1}
                     </span>
