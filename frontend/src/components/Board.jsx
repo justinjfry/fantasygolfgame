@@ -642,7 +642,14 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
               <div style={{ height: '1em', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', marginBottom: '-0.1em' }}>
                 <span style={{
                   fontSize: '0.85em',
-                  color: '#0d47a1',
+                  color: (() => {
+                    const score = getPlayerScore(golferObj.name);
+                    // Check if score is under par (negative number or starts with '-')
+                    if (score && (score.toString().startsWith('-') || (typeof score === 'number' && score < 0))) {
+                      return '#ff0000'; // RED for under par
+                    }
+                    return '#0d47a1'; // Default blue
+                  })(),
                   fontWeight: 'bold',
                   minHeight: '16px',
                   display: 'block',
