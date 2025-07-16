@@ -371,9 +371,6 @@ app.get('/api/boards', async (req, res) => {
 app.delete('/api/delete-board/:username', deleteBoardHandler);
 app.get('/api/delete-board/:username', deleteBoardHandler);
 
-// UTILITY: Create board for existing user (for admin use)
-app.post('/api/create-board/:username', createBoardHandler);
-
 async function deleteBoardHandler(req, res) {
   const { username } = req.params;
   try {
@@ -382,38 +379,6 @@ async function deleteBoardHandler(req, res) {
   } catch (err) {
     console.error('Error deleting board:', err);
     res.status(500).json({ error: 'Failed to delete board' });
-  }
-}
-
-async function createBoardHandler(req, res) {
-  const { username } = req.params;
-  try {
-    // Check if user exists
-    const userResult = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
-    if (userResult.rows.length === 0) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-    
-    // Check if board already exists
-    const boardResult = await pool.query('SELECT * FROM boards WHERE username = $1', [username]);
-    if (boardResult.rows.length > 0) {
-      return res.status(409).json({ error: 'Board already exists for this user' });
-    }
-    
-    // Create empty board
-    const emptyBoard = {
-      boardContent: Array(25).fill('Select Golfer'),
-      selectedSquares: [],
-      usedGolfers: [],
-      lastSaved: new Date().toISOString()
-    };
-    
-    await pool.query('INSERT INTO boards (username, board) VALUES ($1, $2)', [username, emptyBoard]);
-    console.log(`Created board for existing user: ${username}`);
-    res.json({ success: true, message: `Created board for user: ${username}` });
-  } catch (err) {
-    console.error('Error creating board:', err);
-    res.status(500).json({ error: 'Failed to create board' });
   }
 }
 
@@ -430,23 +395,6 @@ app.post('/api/register', async (req, res) => {
   // Hash password and insert new user
   const hashed = await bcrypt.hash(password, 10);
   await pool.query('INSERT INTO users (username, password) VALUES ($1, $2)', [username, hashed]);
-  
-  // Create an empty board for the new user
-  const emptyBoard = {
-    boardContent: Array(25).fill('Select Golfer'),
-    selectedSquares: [],
-    usedGolfers: [],
-    lastSaved: new Date().toISOString()
-  };
-  
-  try {
-    await pool.query('INSERT INTO boards (username, board) VALUES ($1, $2)', [username, emptyBoard]);
-    console.log(`Created empty board for new user: ${username}`);
-  } catch (err) {
-    console.error('Error creating empty board for new user:', err);
-    // Don't fail registration if board creation fails
-  }
-  
   res.json({ success: true });
 });
 
