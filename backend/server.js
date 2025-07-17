@@ -46,7 +46,7 @@ let players = [];
 let courses = [];
 let games = [];
 
-let boardsLocked = false; // Set to true to lock all boards
+let boardsLocked = true; // Set to true to lock all boards
 
 // Add lock status endpoint
 app.get('/api/boards/lock-status', (req, res) => {
