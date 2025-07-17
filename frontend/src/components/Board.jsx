@@ -864,43 +864,45 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
         alignItems: 'center',
       }}
     >
-      {/* Fixed-position Rules Box */}
-      <div
-          style={{
-            position: 'fixed',
-            top: '120px',
-            left: '40px',
-            background: 'rgba(255,255,255,0.95)',
-            borderRadius: '15px',
-            padding: '1.5rem',
-            minWidth: '220px',
-            maxWidth: '260px',
-            boxShadow: '0 4px 24px rgba(33,150,243,0.15)',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'flex-start',
-            zIndex: 10,
-          }}
-        >
-          <h3 style={{ color: '#0d47a1', fontSize: '1.3rem', fontWeight: 'bold', marginBottom: '1rem' }}>
-            Rules
-          </h3>
-          <ol style={{ color: '#333', fontSize: '1.05rem', paddingLeft: '1.2rem' }}>
-            <li style={{ marginBottom: '0.7rem' }}><b>1.</b> Drag players to fill squares on your board. *Double click a square to remove players</li>
-            <li style={{ marginBottom: '0.7rem' }}><b>2.</b> Stay under salary budget for each color zone.</li>
-            <li style={{ marginBottom: '0.7rem' }}><b>3.</b> Fill all 25 spaces to complete your board.</li>
-          </ol>
-          
-          <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '2px solid #0d47a1' }}>
-            <h4 style={{ color: '#0d47a1', fontSize: '1.1rem', fontWeight: 'bold', marginBottom: '0.8rem' }}>
-              How to win:
-            </h4>
-            <ol style={{ color: '#333', fontSize: '1rem', paddingLeft: '1.2rem' }}>
-              <li style={{ marginBottom: '0.5rem' }}>Half the pot goes to the best combined score of five golfers in a row (bingo line).</li>
-              <li style={{ marginBottom: '0.5rem' }}>The other half is split between anyone who has the winning golfer on their board.</li>
+      {/* Fixed-position Rules Box - Only show when not readOnly (boards not locked) */}
+      {!readOnly && (
+        <div
+            style={{
+              position: 'fixed',
+              top: '120px',
+              left: '40px',
+              background: 'rgba(255,255,255,0.95)',
+              borderRadius: '15px',
+              padding: '1.5rem',
+              minWidth: '220px',
+              maxWidth: '260px',
+              boxShadow: '0 4px 24px rgba(33,150,243,0.15)',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'flex-start',
+              zIndex: 10,
+            }}
+          >
+            <h3 style={{ color: '#0d47a1', fontSize: '1.3rem', fontWeight: 'bold', marginBottom: '1rem' }}>
+              Rules
+            </h3>
+            <ol style={{ color: '#333', fontSize: '1.05rem', paddingLeft: '1.2rem' }}>
+              <li style={{ marginBottom: '0.7rem' }}><b>1.</b> Drag players to fill squares on your board. *Double click a square to remove players</li>
+              <li style={{ marginBottom: '0.7rem' }}><b>2.</b> Stay under salary budget for each color zone.</li>
+              <li style={{ marginBottom: '0.7rem' }}><b>3.</b> Fill all 25 spaces to complete your board.</li>
             </ol>
+            
+            <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '2px solid #0d47a1' }}>
+              <h4 style={{ color: '#0d47a1', fontSize: '1.1rem', fontWeight: 'bold', marginBottom: '0.8rem' }}>
+                How to win:
+              </h4>
+              <ol style={{ color: '#333', fontSize: '1rem', paddingLeft: '1.2rem' }}>
+                <li style={{ marginBottom: '0.5rem' }}>Half the pot goes to the best combined score of five golfers in a row (bingo line).</li>
+                <li style={{ marginBottom: '0.5rem' }}>The other half is split between anyone who has the winning golfer on their board.</li>
+              </ol>
+            </div>
           </div>
-        </div>
+      )}
       {/* Header with absolutely positioned Leaderboard Button */}
       <div style={{ position: 'relative', textAlign: 'center', marginBottom: '0.25rem' }}>
         <h1 style={{ color: '#FFD600', fontSize: '2.5rem', fontWeight: 'bold', marginBottom: 0, display: 'inline-block' }}>
