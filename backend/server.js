@@ -371,6 +371,9 @@ app.get('/api/boards', async (req, res) => {
 app.delete('/api/delete-board/:username', deleteBoardHandler);
 app.get('/api/delete-board/:username', deleteBoardHandler);
 
+// ADMIN: Delete user entirely (board + account)
+app.delete('/api/delete-user/:username', deleteUserHandler);
+
 async function deleteBoardHandler(req, res) {
   const { username } = req.params;
   try {
@@ -379,6 +382,23 @@ async function deleteBoardHandler(req, res) {
   } catch (err) {
     console.error('Error deleting board:', err);
     res.status(500).json({ error: 'Failed to delete board' });
+  }
+}
+
+async function deleteUserHandler(req, res) {
+  const { username } = req.params;
+  try {
+    // Delete board first
+    await pool.query('DELETE FROM boards WHERE username = $1', [username]);
+    
+    // Then delete user account
+    await pool.query('DELETE FROM users WHERE username = $1', [username]);
+    
+    console.log(`Deleted user entirely: ${username}`);
+    res.json({ success: true, message: `Deleted user and board for: ${username}` });
+  } catch (err) {
+    console.error('Error deleting user:', err);
+    res.status(500).json({ error: 'Failed to delete user' });
   }
 }
 
