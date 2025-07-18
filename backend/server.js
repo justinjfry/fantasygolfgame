@@ -302,6 +302,8 @@ app.get('/api/golf/leaderboard', async (req, res) => {
     const data = await response.json();
     
     console.log('Backend received response with keys:', Object.keys(data));
+    console.log('Backend API response status:', response.status);
+    console.log('Backend API response data:', JSON.stringify(data, null, 2));
     
     if (Array.isArray(data.leaderboard)) {
       const leaderboard = data.leaderboard.map(player => ({
