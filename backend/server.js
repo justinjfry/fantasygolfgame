@@ -322,14 +322,19 @@ app.get('/api/golf/leaderboard', async (req, res) => {
     }
     
     if (data.live_stats && Array.isArray(data.live_stats)) {
-      const leaderboard = data.live_stats.map(player => ({
-        name: player.player_name,
-        score: player.total >= 0 ? `+${player.total}` : `${player.total}`,
-        position: player.position,
-        total_score: player.total,
-        rounds: [],
-        status: player.thru ? `${player.thru}` : 'F'
-      }));
+      const leaderboard = data.live_stats.map(player => {
+        // Convert "Last, First" to "First Last" format
+        const nameParts = player.player_name.split(', ');
+        const formattedName = nameParts.length === 2 ? `${nameParts[1]} ${nameParts[0]}` : player.player_name;
+        return {
+          name: formattedName,
+          score: player.total >= 0 ? `+${player.total}` : `${player.total}`,
+          position: player.position,
+          total_score: player.total,
+          rounds: [],
+          status: player.thru ? `${player.thru}` : 'F'
+        };
+      });
       
       // Cache the successful response
       leaderboardCache = leaderboard;
@@ -365,14 +370,19 @@ app.post('/api/golf/update-scores', async (req, res) => {
     }
     
     if (data.live_stats && Array.isArray(data.live_stats)) {
-      const leaderboard = data.live_stats.map(player => ({
-        name: player.player_name,
-        score: player.total >= 0 ? `+${player.total}` : `${player.total}`,
-        position: player.position,
-        total_score: player.total,
-        rounds: [],
-        status: player.thru ? `${player.thru}` : 'F'
-      }));
+      const leaderboard = data.live_stats.map(player => {
+        // Convert "Last, First" to "First Last" format
+        const nameParts = player.player_name.split(', ');
+        const formattedName = nameParts.length === 2 ? `${nameParts[1]} ${nameParts[0]}` : player.player_name;
+        return {
+          name: formattedName,
+          score: player.total >= 0 ? `+${player.total}` : `${player.total}`,
+          position: player.position,
+          total_score: player.total,
+          rounds: [],
+          status: player.thru ? `${player.thru}` : 'F'
+        };
+      });
       
       // Update cache
       leaderboardCache = leaderboard;
