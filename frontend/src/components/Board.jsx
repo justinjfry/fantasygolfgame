@@ -243,8 +243,7 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
     // Return formatted score
     if (player) {
       const score = player.score;
-      if (score === 0) return 'E';
-      if (score > 0) return `+${score}`;
+      // Backend already formats the score, so just return it as-is
       return score.toString();
     }
     
