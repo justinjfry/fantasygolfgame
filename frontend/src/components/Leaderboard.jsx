@@ -144,6 +144,29 @@ export default function Leaderboard({ onSelectUser, viewedUsername, viewedBoard,
     );
   }
 
+  // Find the golfer with the lowest score in the tournament
+  const lowestScoringGolfer = leaderboardData.length > 0 ? leaderboardData.reduce((lowest, current) => {
+    const currentScore = typeof current.total_score === 'number' ? current.total_score : 0;
+    const lowestScore = typeof lowest.total_score === 'number' ? lowest.total_score : 0;
+    return currentScore < lowestScore ? current : lowest;
+  }) : null;
+
+  // Check which users have the lowest scoring golfer
+  const usersWithLowestGolfer = new Set();
+  if (lowestScoringGolfer) {
+    Object.keys(userBoards).forEach(username => {
+      const board = userBoards[username];
+      if (board && board.boardContent) {
+        const hasLowestGolfer = board.boardContent.some(square => 
+          square && square.name && square.name.toLowerCase() === lowestScoringGolfer.name.toLowerCase()
+        );
+        if (hasLowestGolfer) {
+          usersWithLowestGolfer.add(username);
+        }
+      }
+    });
+  }
+
   // Sort usernames by their best score (lowest first)
   const sortedUsernames = [...usernames].sort((a, b) => {
     const scoreA = bestScores[a]?.totalScore ?? Infinity;
@@ -211,7 +234,10 @@ export default function Leaderboard({ onSelectUser, viewedUsername, viewedBoard,
                     }}>
                       {index + 1}
                     </span>
-                    <span>{username}</span>
+                    <span>
+                      {usersWithLowestGolfer.has(username) && '🏆 '}
+                      {username}
+                    </span>
                   </div>
                   <div style={{ 
                     fontSize: '0.9rem', 
