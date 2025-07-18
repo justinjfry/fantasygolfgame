@@ -328,7 +328,7 @@ app.get('/api/golf/leaderboard', async (req, res) => {
         const formattedName = nameParts.length === 2 ? `${nameParts[1]} ${nameParts[0]}` : player.player_name;
         return {
           name: formattedName,
-          score: player.total >= 0 ? `+${player.total}` : `${player.total}`,
+          score: player.total === 0 ? 'E' : (player.total > 0 ? `+${player.total}` : `${player.total}`),
           position: player.position,
           total_score: player.total,
           rounds: [],
@@ -376,7 +376,7 @@ app.post('/api/golf/update-scores', async (req, res) => {
         const formattedName = nameParts.length === 2 ? `${nameParts[1]} ${nameParts[0]}` : player.player_name;
         return {
           name: formattedName,
-          score: player.total >= 0 ? `+${player.total}` : `${player.total}`,
+          score: player.total === 0 ? 'E' : (player.total > 0 ? `+${player.total}` : `${player.total}`),
           position: player.position,
           total_score: player.total,
           rounds: [],
