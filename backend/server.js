@@ -293,7 +293,7 @@ const currentLeaderboardData = [
   { name: "Bryan Newman", score: "+15", position: "T156", total_score: 15, rounds: [], status: "F" }
 ];
 
-// SportsRadar API proxy endpoint with caching
+// Data Golf API proxy endpoint with caching
 app.get('/api/golf/leaderboard', async (req, res) => {
   const now = Date.now();
   
@@ -304,12 +304,10 @@ app.get('/api/golf/leaderboard', async (req, res) => {
   }
   
   try {
-    const SPORTSRADAR_API_KEY = 'Y20xhFXST1FnsakFRq6Xsz4KlG9geeE2J8L4rHBs';
-    const BRITISH_OPEN_TOURNAMENT_ID = '974fd177-eb3c-47fa-a632-b9cf5a57f134';
+    const DATAGOLF_API_KEY = '9340428e0600e59a0fb37275733a';
+    const url = `https://feeds.datagolf.com/preds/live-tournament-stats?key=${DATAGOLF_API_KEY}&stats=sg_total&display=value&file_format=json`;
     
-    const url = `https://api.sportradar.com/golf/trial/euro/v3/en/2025/tournaments/${BRITISH_OPEN_TOURNAMENT_ID}/leaderboard.json?api_key=${SPORTSRADAR_API_KEY}`;
-    
-    console.log('Backend fetching from SportsRadar:', url);
+    console.log('Backend fetching from Data Golf API:', url);
     
     const response = await fetch(url);
     const data = await response.json();
@@ -323,14 +321,14 @@ app.get('/api/golf/leaderboard', async (req, res) => {
       return;
     }
     
-    if (Array.isArray(data.leaderboard)) {
-      const leaderboard = data.leaderboard.map(player => ({
-        name: `${player.first_name} ${player.last_name}`,
-        score: player.score ?? 'E',
-        position: player.position ?? 'TBD',
-        total_score: player.strokes ?? 0,
-        rounds: player.rounds ?? [],
-        status: player.status ?? ''
+    if (data.live_stats && Array.isArray(data.live_stats)) {
+      const leaderboard = data.live_stats.map(player => ({
+        name: player.player_name,
+        score: player.total >= 0 ? `+${player.total}` : `${player.total}`,
+        position: player.position,
+        total_score: player.total,
+        rounds: [],
+        status: player.thru ? `${player.thru}` : 'F'
       }));
       
       // Cache the successful response
@@ -344,7 +342,7 @@ app.get('/api/golf/leaderboard', async (req, res) => {
       res.json(currentLeaderboardData);
     }
   } catch (error) {
-    console.error('Backend SportsRadar API error:', error);
+    console.error('Backend Data Golf API error:', error);
     console.log('Using current backup data due to API error');
     res.json(currentLeaderboardData);
   }
@@ -353,12 +351,10 @@ app.get('/api/golf/leaderboard', async (req, res) => {
 // Manual update endpoint for new scores (bypasses cache)
 app.post('/api/golf/update-scores', async (req, res) => {
   try {
-    const SPORTSRADAR_API_KEY = 'Y20xhFXST1FnsakFRq6Xsz4KlG9geeE2J8L4rHBs';
-    const BRITISH_OPEN_TOURNAMENT_ID = '974fd177-eb3c-47fa-a632-b9cf5a57f134';
+    const DATAGOLF_API_KEY = '9340428e0600e59a0fb37275733a';
+    const url = `https://feeds.datagolf.com/preds/live-tournament-stats?key=${DATAGOLF_API_KEY}&stats=sg_total&display=value&file_format=json`;
     
-    const url = `https://api.sportradar.com/golf/trial/euro/v3/en/2025/tournaments/${BRITISH_OPEN_TOURNAMENT_ID}/leaderboard.json?api_key=${SPORTSRADAR_API_KEY}`;
-    
-    console.log('Manual update: Fetching from SportsRadar');
+    console.log('Manual update: Fetching from Data Golf API');
     
     const response = await fetch(url);
     const data = await response.json();
@@ -368,14 +364,14 @@ app.post('/api/golf/update-scores', async (req, res) => {
       return res.json({ success: false, message: 'Rate limit still active' });
     }
     
-    if (Array.isArray(data.leaderboard)) {
-      const leaderboard = data.leaderboard.map(player => ({
-        name: `${player.first_name} ${player.last_name}`,
-        score: player.score ?? 'E',
-        position: player.position ?? 'TBD',
-        total_score: player.strokes ?? 0,
-        rounds: player.rounds ?? [],
-        status: player.status ?? ''
+    if (data.live_stats && Array.isArray(data.live_stats)) {
+      const leaderboard = data.live_stats.map(player => ({
+        name: player.player_name,
+        score: player.total >= 0 ? `+${player.total}` : `${player.total}`,
+        position: player.position,
+        total_score: player.total,
+        rounds: [],
+        status: player.thru ? `${player.thru}` : 'F'
       }));
       
       // Update cache
