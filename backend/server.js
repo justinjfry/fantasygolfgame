@@ -284,7 +284,8 @@ const currentLeaderboardData = [
   { name: "K J Choi", score: "+11", position: "T160", total_score: 11, rounds: [], status: "F" },
   { name: "Tom Hoge", score: "+11", position: "T160", total_score: 11, rounds: [], status: "F" },
   { name: "Bryan Newman", score: "+12", position: "162", total_score: 12, rounds: [], status: "F" },
-  { name: "Joaquin Niemann", score: "+2", position: "T71", total_score: 2, rounds: [], status: "F" }
+  { name: "Joaquin Niemann", score: "+2", position: "T71", total_score: 2, rounds: [], status: "F" },
+  { name: "Adam Scott", score: "+9", position: "T144", total_score: 9, rounds: [], status: "F" }
 ];
 
 // SportsRadar API proxy endpoint with caching
