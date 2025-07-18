@@ -128,6 +128,11 @@ app.get('/api/courses', (req, res) => {
   res.json(courses);
 });
 
+// Cache for API responses
+let leaderboardCache = null;
+let lastCacheTime = null;
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
+
 // Current British Open leaderboard data as fallback
 const currentLeaderboardData = [
   { name: "Matt Fitzpatrick", score: "-9", position: "1", total_score: -9, rounds: [], status: "15" },
@@ -282,8 +287,16 @@ const currentLeaderboardData = [
   { name: "Joaquin Niemann", score: "+2", position: "T71", total_score: 2, rounds: [], status: "F" }
 ];
 
-// SportsRadar API proxy endpoint
+// SportsRadar API proxy endpoint with caching
 app.get('/api/golf/leaderboard', async (req, res) => {
+  const now = Date.now();
+  
+  // Check if we have valid cached data
+  if (leaderboardCache && lastCacheTime && (now - lastCacheTime) < CACHE_DURATION) {
+    console.log('Backend: Returning cached leaderboard data (age:', Math.round((now - lastCacheTime) / 1000), 'seconds)');
+    return res.json(leaderboardCache);
+  }
+  
   try {
     const SPORTSRADAR_API_KEY = 'Y20xhFXST1FnsakFRq6Xsz4KlG9geeE2J8L4rHBs';
     const BRITISH_OPEN_TOURNAMENT_ID = '974fd177-eb3c-47fa-a632-b9cf5a57f134';
@@ -297,7 +310,12 @@ app.get('/api/golf/leaderboard', async (req, res) => {
     
     console.log('Backend received response with keys:', Object.keys(data));
     console.log('Backend API response status:', response.status);
-    console.log('Backend API response data:', JSON.stringify(data, null, 2));
+    
+    if (response.status === 429) {
+      console.log('Backend: Rate limit hit, using backup data');
+      res.json(currentLeaderboardData);
+      return;
+    }
     
     if (Array.isArray(data.leaderboard)) {
       const leaderboard = data.leaderboard.map(player => ({
@@ -309,7 +327,11 @@ app.get('/api/golf/leaderboard', async (req, res) => {
         status: player.status ?? ''
       }));
       
-      console.log('Backend parsed leaderboard with', leaderboard.length, 'players');
+      // Cache the successful response
+      leaderboardCache = leaderboard;
+      lastCacheTime = now;
+      
+      console.log('Backend parsed leaderboard with', leaderboard.length, 'players and cached for 5 minutes');
       res.json(leaderboard);
     } else {
       console.log('Backend: No valid leaderboard data found, using current backup data');
@@ -320,6 +342,64 @@ app.get('/api/golf/leaderboard', async (req, res) => {
     console.log('Using current backup data due to API error');
     res.json(currentLeaderboardData);
   }
+});
+
+// Manual update endpoint for new scores (bypasses cache)
+app.post('/api/golf/update-scores', async (req, res) => {
+  try {
+    const SPORTSRADAR_API_KEY = 'Y20xhFXST1FnsakFRq6Xsz4KlG9geeE2J8L4rHBs';
+    const BRITISH_OPEN_TOURNAMENT_ID = '974fd177-eb3c-47fa-a632-b9cf5a57f134';
+    
+    const url = `https://api.sportradar.com/golf/trial/euro/v3/en/2025/tournaments/${BRITISH_OPEN_TOURNAMENT_ID}/leaderboard.json?api_key=${SPORTSRADAR_API_KEY}`;
+    
+    console.log('Manual update: Fetching from SportsRadar');
+    
+    const response = await fetch(url);
+    const data = await response.json();
+    
+    if (response.status === 429) {
+      console.log('Manual update: Rate limit still active');
+      return res.json({ success: false, message: 'Rate limit still active' });
+    }
+    
+    if (Array.isArray(data.leaderboard)) {
+      const leaderboard = data.leaderboard.map(player => ({
+        name: `${player.first_name} ${player.last_name}`,
+        score: player.score ?? 'E',
+        position: player.position ?? 'TBD',
+        total_score: player.strokes ?? 0,
+        rounds: player.rounds ?? [],
+        status: player.status ?? ''
+      }));
+      
+      // Update cache
+      leaderboardCache = leaderboard;
+      lastCacheTime = Date.now();
+      
+      console.log('Manual update: Successfully updated cache with', leaderboard.length, 'players');
+      res.json({ success: true, message: 'Cache updated successfully' });
+    } else {
+      res.json({ success: false, message: 'No valid data received' });
+    }
+  } catch (error) {
+    console.error('Manual update error:', error);
+    res.json({ success: false, message: 'Update failed' });
+  }
+});
+
+// API status endpoint
+app.get('/api/golf/status', (req, res) => {
+  const now = Date.now();
+  const cacheAge = lastCacheTime ? Math.round((now - lastCacheTime) / 1000) : null;
+  const cacheValid = cacheAge && cacheAge < (CACHE_DURATION / 1000);
+  
+  res.json({
+    cacheAge: cacheAge,
+    cacheValid: cacheValid,
+    lastUpdate: lastCacheTime ? new Date(lastCacheTime).toISOString() : null,
+    cacheDuration: CACHE_DURATION / 1000,
+    hasBackupData: currentLeaderboardData.length > 0
+  });
 });
 
 // Get all games
