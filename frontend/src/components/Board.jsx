@@ -658,9 +658,9 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
     }
     const isWhite = !isGreen && !isOrange && !isBabyBlue && !isLightMagenta;
     
-    // Apply light red background if golfer has +2 or worse score
+    // Apply darker red background if golfer has +2 or worse score
     if (hasPoorScore) {
-      backgroundColor = '#ffebee'; // Light red background
+      backgroundColor = '#ffcdd2'; // Darker red background
     }
     
     const disableInteractions = readOnly;
