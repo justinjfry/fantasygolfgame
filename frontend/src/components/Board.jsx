@@ -9,6 +9,7 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
   const [saveStatus, setSaveStatus] = useState(null);
   const [leaderboardData, setLeaderboardData] = useState([]);
   const [scoresLoading, setScoresLoading] = useState(true);
+  const [poorScoreGolfers, setPoorScoreGolfers] = useState(new Set());
   const autoSaveTimeout = useRef();
   const saveStatusTimeout = useRef();
 
@@ -191,6 +192,20 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
         setScoresLoading(true);
         const data = await golfApi.getCurrentLeaderboard();
         setLeaderboardData(data);
+        
+        // One-time identification of golfers with +2 or worse scores
+        const poorGolfers = new Set();
+        data.forEach(player => {
+          if (player.score && player.score !== 'N/A' && player.score !== '...') {
+            const scoreNum = typeof player.score === 'number' ? player.score : 
+              player.score.startsWith('+') ? parseInt(player.score.substring(1)) : 
+              player.score.startsWith('-') ? parseInt(player.score) : parseInt(player.score);
+            if (scoreNum >= 2) { // +2 or worse
+              poorGolfers.add(player.name);
+            }
+          }
+        });
+        setPoorScoreGolfers(poorGolfers);
       } catch (error) {
         console.error('Error fetching scores:', error);
       } finally {
@@ -628,6 +643,10 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
     let isOrange = false;
     let isBabyBlue = false;
     let isLightMagenta = false;
+    
+    // Check if golfer has +2 or worse score for light red background (one-time snapshot)
+    const hasPoorScore = isFilled && golferObj.name && poorScoreGolfers.has(golferObj.name);
+    
     if (isBoardFull) {
       backgroundColor = '#FFD600';
     } else {
@@ -638,6 +657,11 @@ const Board = forwardRef(function Board({ username, onBack, onLeaderboardNav, on
       else if ([10, 11, 13, 14].includes(index)) { backgroundColor = '#DDA0DD'; isLightMagenta = true; }
     }
     const isWhite = !isGreen && !isOrange && !isBabyBlue && !isLightMagenta;
+    
+    // Apply light red background if golfer has +2 or worse score
+    if (hasPoorScore) {
+      backgroundColor = '#ffebee'; // Light red background
+    }
     
     const disableInteractions = readOnly;
     return (
